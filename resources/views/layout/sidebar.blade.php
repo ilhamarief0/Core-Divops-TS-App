@@ -94,6 +94,23 @@
                         <!--end:Menu link-->
                     </div>
                     <!--end:Menu item-->
+                    <!--begin:Menu item-->
+                    <div class="menu-item">
+                        <!--begin:Menu link-->
+                        <a class="menu-link {{ Route::is('clientwebsitemonitoring.index') ? 'active' : '' }}" href="{{ route('clientwebsitemonitoring.index') }}">
+                            <span class="menu-icon">
+                                <i class="ki-duotone ki-element-11 fs-2">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                    <span class="path3"></span>
+                                    <span class="path4"></span>
+                                </i>
+                            </span>
+                            <span class="menu-title">Client Website Monitoring</span>
+                        </a>
+                        <!--end:Menu link-->
+                    </div>
+                    <!--end:Menu item-->
                 </div>
                 <!--end::Menu-->
             </div>

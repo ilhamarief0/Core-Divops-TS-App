@@ -33,4 +33,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/monitoringweb/client/getData/{id}', 'getData')->name('clientmonitoringweb.getdata');
         Route::post('/monitoringweb/client/update/{id}', 'update')->name('clientmonitoring.update');
     });
+
+    Route::controller(ClientMonitoringWebController::class)->group(function () {
+        Route::get('/monitoringweb/website', 'index')->name('clientwebsitemonitoring.index');
+    });
 });
