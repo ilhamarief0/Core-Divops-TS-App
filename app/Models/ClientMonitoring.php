@@ -11,6 +11,12 @@ class ClientMonitoring extends Model
 
     protected $fillable = ['name', 'description', 'bot_token', 'chat_id', 'creator_id'];
 
+
+    public function website()
+    {
+        return $this->hasOne(ClientWebsiteMonitoring::class, 'client_monitoring_id');
+    }
+
     public function creator()
     {
         return $this->belongsTo(User::class);

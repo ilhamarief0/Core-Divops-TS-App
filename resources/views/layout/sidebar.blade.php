@@ -106,7 +106,7 @@
                                     <span class="path4"></span>
                                 </i>
                             </span>
-                            <span class="menu-title">Client Website Monitoring</span>
+                            <span class="menu-title">Website Monitoring</span>
                         </a>
                         <!--end:Menu link-->
                     </div>

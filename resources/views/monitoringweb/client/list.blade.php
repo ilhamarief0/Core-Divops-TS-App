@@ -103,8 +103,8 @@
                 <!--end::Card body-->
             </div>
             <!--end::Card-->
-            @include('components.add-client-monitoring')
-            @include('components.edit-client-monitoring')
+            @include('components.client.add-client-monitoring')
+            @include('components.client.edit-client-monitoring')
         </div>
         <!--end::Content container-->
     </div>

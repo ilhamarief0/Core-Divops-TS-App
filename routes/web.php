@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClientMonitoringWebController;
+use App\Http\Controllers\ClientWebsiteMonitoringWebController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MonitoringWebController;
 use Illuminate\Support\Facades\Route;
@@ -34,7 +35,11 @@ Route::middleware('auth')->group(function () {
         Route::post('/monitoringweb/client/update/{id}', 'update')->name('clientmonitoring.update');
     });
 
-    Route::controller(ClientMonitoringWebController::class)->group(function () {
+    Route::controller(ClientWebsiteMonitoringWebController::class)->group(function () {
         Route::get('/monitoringweb/website', 'index')->name('clientwebsitemonitoring.index');
+        Route::post('/monitoringweb/website/store', 'store')->name('clientwebsitemonitoring.store');
+        Route::delete('/monitoringweb/website/delete/{id}', 'delete')->name('clientwebsitemonitroing.delete');
+        Route::get('/monitoringweb/website/getData/{id}', 'getData')->name('clientwebsitemonitoring.getdata');
+        Route::post('/monitoringweb/website/update/{id}', 'update')->name('clientwebsitemonitoring.update');
     });
 });

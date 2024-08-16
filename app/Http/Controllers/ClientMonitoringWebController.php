@@ -28,12 +28,6 @@ class ClientMonitoringWebController extends Controller
                 ->addColumn('chat_id', function ($row) {
                     return '<span class="badge badge-light-primary">' . $row->chat_id . '</span>';
                 })
-                // ->addColumn('action', function ($row) {
-
-                //     $btn = '<a href="javascript:void(0)" class="edit btn btn-primary btn-sm">View</a>';
-
-                //     return $btn;
-                // })
 
 
                 ->addColumn('action', function ($row) {
