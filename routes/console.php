@@ -11,3 +11,5 @@ Artisan::command('inspire', function () {
 Schedule::command('app:monitor-website')->everyMinute();
 
 Schedule::command('forum:weekly-recap')->everyMinute();
+
+Schedule::command('monitor:resources')->everyMinute();

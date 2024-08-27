@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class MonitorServerResources extends Command
 {
-    protected $signature = 'monitor:resources';
+protected $signature = 'monitor:resources';
 
     protected $description = 'Monitor CPU, Memory, and Disk Usage of the Server';
 
