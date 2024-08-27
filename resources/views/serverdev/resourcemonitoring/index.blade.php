@@ -53,6 +53,7 @@
 @endsection
 
 @push('scripts')
+@push('scripts')
 <script type="text/javascript">
     am5.ready(function () {
         var root = am5.Root.new("kt_amcharts_5");
@@ -116,10 +117,19 @@
             renderer: yRenderer
         }));
 
-        function updateChartData(data) {
-            yAxis.data.setAll(data);
+        var series1, series2;
 
-            var series1 = chart.series.push(am5radar.RadarColumnSeries.new(root, {
+        function updateChartData(data) {
+            // Hapus seri lama jika ada
+            if (series1) {
+                chart.series.removeValue(series1);
+            }
+            if (series2) {
+                chart.series.removeValue(series2);
+            }
+
+            // Tambahkan seri baru
+            series1 = chart.series.push(am5radar.RadarColumnSeries.new(root, {
                 xAxis: xAxis,
                 yAxis: yAxis,
                 clustered: false,
@@ -137,7 +147,7 @@
 
             series1.data.setAll(data);
 
-            var series2 = chart.series.push(am5radar.RadarColumnSeries.new(root, {
+            series2 = chart.series.push(am5radar.RadarColumnSeries.new(root, {
                 xAxis: xAxis,
                 yAxis: yAxis,
                 clustered: false,
@@ -181,5 +191,8 @@
         setInterval(fetchData, 5000);
     }); // end am5.ready()
 </script>
+@endpush
 
 @endpush
+
+
