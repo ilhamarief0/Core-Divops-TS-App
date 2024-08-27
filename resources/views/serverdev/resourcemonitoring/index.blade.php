@@ -41,6 +41,9 @@
         <div id="kt_app_content_container" class="app-container container-fluid">
             <div class="card card-bordered">
                 <div class="card-body">
+                    <!-- Label di atas chart -->
+                    <h3 class="text-center mb-4">Monitoring Server Dev GCP TS</h3>
+
                     <!-- Button to refresh the chart -->
                     <button id="refreshChart" class="btn btn-primary mb-3">Refresh Chart</button>
 
