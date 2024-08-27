@@ -5,8 +5,6 @@ namespace App\Console\Commands;
 use App\Models\ServerDevResource;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class MonitorServerDevResources extends Command
 {
@@ -23,9 +21,15 @@ class MonitorServerDevResources extends Command
         try {
             Log::info('Monitoring started.');
 
-            // Ambil nilai CPU usage
-            $cpuLoad = sys_getloadavg()[0];
-            Log::info('CPU Load: ' . $cpuLoad);
+            // Ambil nilai CPU usage untuk core 0
+            $cpuLoad = shell_exec("mpstat -P ALL 1 1 | grep 'Average' | grep '0' | awk '{print $3}'");
+            if ($cpuLoad === null) {
+                Log::error('Failed to retrieve CPU load for core 0.');
+                return;
+            }
+
+            $cpuLoad = 100 - (float)trim($cpuLoad); // Menghitung penggunaan CPU (idle = 100% - usage%)
+            Log::info('CPU Load Core 0: ' . $cpuLoad);
 
             // Ambil nilai Memory usage
             $free = shell_exec('free');
