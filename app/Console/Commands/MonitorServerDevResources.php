@@ -5,31 +5,48 @@ namespace App\Console\Commands;
 use App\Models\ServerDevResource;
 use Illuminate\Console\Command;
 use App\Models\ServerResource;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class MonitorServerResources extends Command
 {
-protected $signature = 'monitor:resources';
+    protected $signature = 'monitor:resources';
 
     protected $description = 'Monitor CPU, Memory, and Disk Usage of the Server';
 
     public function handle()
     {
-        while (true) {
+        try {
+            Log::info('Monitoring started.');
+
             // Ambil nilai CPU usage
             $cpuLoad = sys_getloadavg()[0];
+            Log::info('CPU Load: ' . $cpuLoad);
 
             // Ambil nilai Memory usage
             $free = shell_exec('free');
+            if (!$free) {
+                Log::error('Failed to retrieve memory usage.');
+                return;
+            }
+
             $free = (string)trim($free);
             $free_arr = explode("\n", $free);
             $mem = explode(" ", $free_arr[1]);
             $mem = array_filter($mem);
             $mem = array_merge($mem);
             $memoryUsage = ($mem[2] / $mem[1]) * 100;
+            Log::info('Memory Usage: ' . $memoryUsage);
 
             // Ambil nilai Disk usage
-            $diskUsage = (disk_total_space("/") - disk_free_space("/")) / disk_total_space("/") * 100;
+            $diskTotal = disk_total_space("/");
+            $diskFree = disk_free_space("/");
+            if ($diskTotal === false || $diskFree === false) {
+                Log::error('Failed to retrieve disk usage.');
+                return;
+            }
+
+            $diskUsage = ($diskTotal - $diskFree) / $diskTotal * 100;
+            Log::info('Disk Usage: ' . $diskUsage);
 
             // Simpan ke database
             ServerDevResource::create([
@@ -38,8 +55,9 @@ protected $signature = 'monitor:resources';
                 'disk_usage' => $diskUsage,
             ]);
 
-            // Tunggu selama 5 detik sebelum mengambil data berikutnya
-            sleep(5);
+            Log::info('Data successfully saved to database.');
+        } catch (\Exception $e) {
+            Log::error('Error in MonitorServerResources command: ' . $e->getMessage());
         }
     }
 }
