@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Log;
 class UpdateWeeklyForumStats extends Command
 {
     protected $signature = 'update:monitoringserver';
-    protected $description = 'Update weekly forum stats';
+    protected $description = 'Update Server Dev Resources';
 
     public function __construct()
     {
