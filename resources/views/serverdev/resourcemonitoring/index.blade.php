@@ -116,19 +116,10 @@
             renderer: yRenderer
         }));
 
-        var series1, series2;
-
         function updateChartData(data) {
-            // Hapus seri lama jika ada
-            if (series1) {
-                series1.dispose();
-            }
-            if (series2) {
-                series2.dispose();
-            }
+            yAxis.data.setAll(data);
 
-            // Tambahkan seri baru
-            series1 = chart.series.push(am5radar.RadarColumnSeries.new(root, {
+            var series1 = chart.series.push(am5radar.RadarColumnSeries.new(root, {
                 xAxis: xAxis,
                 yAxis: yAxis,
                 clustered: false,
@@ -146,7 +137,7 @@
 
             series1.data.setAll(data);
 
-            series2 = chart.series.push(am5radar.RadarColumnSeries.new(root, {
+            var series2 = chart.series.push(am5radar.RadarColumnSeries.new(root, {
                 xAxis: xAxis,
                 yAxis: yAxis,
                 clustered: false,
@@ -174,12 +165,8 @@
                 url: '/api/server-resources', // Ganti dengan endpoint API Anda
                 method: 'GET',
                 success: function(response) {
-                    // Cek apakah response.data ada dan dalam format yang benar
-                    if (Array.isArray(response.data)) {
-                        updateChartData(response.data);
-                    } else {
-                        console.error('Data format is incorrect:', response.data);
-                    }
+                    // Anggap data dari server sudah dalam format yang sesuai
+                    updateChartData(response.data);
                 },
                 error: function(xhr, status, error) {
                     console.error('Error fetching data:', error);
@@ -194,8 +181,5 @@
         setInterval(fetchData, 5000);
     }); // end am5.ready()
 </script>
+
 @endpush
-
-
-
-
