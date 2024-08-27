@@ -61,19 +61,19 @@ Route::get('/api/server-resources', function (Request $request) {
     $data = [
         [
             'category' => 'Disk Usage',
-            'value' => DB::table('server_resources')->latest()->value('disk_usage'),
+            'value' => DB::table('server_dev_resources')->latest()->value('disk_usage'),
             'full' => 100,
             'columnSettings' => ['fill' => '#67b7dc']
         ],
         [
             'category' => 'Memory Usage',
-            'value' => DB::table('server_resources')->latest()->value('memory_usage'),
+            'value' => DB::table('server_dev_resources')->latest()->value('memory_usage'),
             'full' => 100,
             'columnSettings' => ['fill' => '#6794dc']
         ],
         [
             'category' => 'CPU Usage',
-            'value' => DB::table('server_resources')->latest()->value('cpu_usage'),
+            'value' => DB::table('server_dev_resources')->latest()->value('cpu_usage'),
             'full' => 100,
             'columnSettings' => ['fill' => '#dc67ab']
         ]
