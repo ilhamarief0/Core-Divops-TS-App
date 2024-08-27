@@ -21,19 +21,17 @@ class MonitorServerDevResources extends Command
         try {
             Log::info('Monitoring started.');
 
-            // Ambil nilai CPU usage untuk core 0 dan 1
-            $cpuLoadCore0 = shell_exec("mpstat -P 0 1 1 | grep 'Average' | awk '{print $3}'");
-            $cpuLoadCore1 = shell_exec("mpstat -P 1 1 1 | grep 'Average' | awk '{print $3}'");
+            // Ambil penggunaan CPU untuk core 0 dan core 1 dari /proc/stat
+            $cpuCore0 = $this->getCpuUsageForCore(0);
+            $cpuCore1 = $this->getCpuUsageForCore(1);
 
-            if ($cpuLoadCore0 === null || $cpuLoadCore1 === null) {
+            if ($cpuCore0 === null || $cpuCore1 === null) {
                 Log::error('Failed to retrieve CPU load for core 0 or core 1.');
                 return;
             }
 
-            $cpuLoadCore0 = 100 - (float)trim($cpuLoadCore0); // Menghitung penggunaan CPU (idle = 100% - usage%)
-            $cpuLoadCore1 = 100 - (float)trim($cpuLoadCore1); // Menghitung penggunaan CPU (idle = 100% - usage%)
-
-            $averageCpuLoad = ($cpuLoadCore0 + $cpuLoadCore1) / 2; // Menghitung rata-rata penggunaan CPU
+            // Hitung rata-rata penggunaan CPU untuk core 0 dan core 1
+            $averageCpuLoad = ($cpuCore0 + $cpuCore1) / 2;
             Log::info('Average CPU Load (Core 0 and 1): ' . $averageCpuLoad);
 
             // Ambil nilai Memory usage
@@ -64,7 +62,7 @@ class MonitorServerDevResources extends Command
 
             // Simpan ke database sebagai integer
             ServerDevResource::create([
-                'cpu_usage' => round($averageCpuLoad), // Menggunakan fungsi round() untuk membulatkan nilai
+                'cpu_usage' => round($averageCpuLoad),
                 'memory_usage' => round($memoryUsage),
                 'disk_usage' => round($diskUsage),
             ]);
@@ -78,22 +76,56 @@ class MonitorServerDevResources extends Command
                 ServerDevResource::orderBy('id', 'asc')->limit($entriesToDelete)->delete();
                 Log::info("Deleted $entriesToDelete old entries from database.");
             }
-
-            // Hitung rata-rata penggunaan dan update data terakhir
-            $averageCpu = round(ServerDevResource::average('cpu_usage'));
-            $averageMemory = round(ServerDevResource::average('memory_usage'));
-            $averageDisk = round(ServerDevResource::average('disk_usage'));
-
-            // Simpan data rata-rata ke database
-            ServerDevResource::where('id', ServerDevResource::max('id'))->update([
-                'cpu_usage' => $averageCpu,
-                'memory_usage' => $averageMemory,
-                'disk_usage' => $averageDisk,
-            ]);
-
-            Log::info('Average data successfully updated in database.');
         } catch (\Exception $e) {
             Log::error('Error in MonitorServerResources command: ' . $e->getMessage());
         }
+    }
+
+    private function getCpuUsageForCore(int $core)
+    {
+        $statFile = file_get_contents('/proc/stat');
+        if ($statFile === false) {
+            Log::error("Failed to read /proc/stat");
+            return null;
+        }
+
+        $lines = explode("\n", $statFile);
+
+        // Cari baris yang sesuai dengan core yang diinginkan, seperti "cpu0" atau "cpu1"
+        foreach ($lines as $line) {
+            if (strpos($line, "cpu$core") === 0) {
+                $parts = array_values(array_filter(explode(" ", $line)));
+                $idleTime = $parts[4];  // waktu idle
+                $totalTime = array_sum(array_slice($parts, 1));  // waktu total
+
+                return $this->calculateCpuUsage($idleTime, $totalTime);
+            }
+        }
+
+        Log::error("No data found for core $core in /proc/stat");
+        return null;
+    }
+
+    private function calculateCpuUsage($idleTime, $totalTime)
+    {
+        // Simpan nilai idle dan total sebelumnya
+        static $lastIdleTime = 0;
+        static $lastTotalTime = 0;
+
+        $idleDiff = $idleTime - $lastIdleTime;
+        $totalDiff = $totalTime - $lastTotalTime;
+
+        // Simpan nilai idle dan total saat ini untuk perhitungan berikutnya
+        $lastIdleTime = $idleTime;
+        $lastTotalTime = $totalTime;
+
+        // Hitung penggunaan CPU dalam persen
+        if ($totalDiff === 0) {
+            return 0;
+        }
+
+        $cpuUsage = (1 - ($idleDiff / $totalDiff)) * 100;
+
+        return $cpuUsage;
     }
 }
