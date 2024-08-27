@@ -42,6 +42,20 @@ return [
             'synchronous' => null,
         ],
 
+        'forum' => [
+            'driver' => 'mysql',
+            'host' => env('FORUM_DB_HOST', 'your_forum_db_host'),
+            'port' => env('FORUM_DB_PORT', '3306'),
+            'database' => env('FORUM_DB_DATABASE', 'your_forum_db_name'),
+            'username' => env('FORUM_DB_USERNAME', 'your_forum_db_username'),
+            'password' => env('FORUM_DB_PASSWORD', 'your_forum_db_password'),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ],
+
         'mysql' => [
             'driver' => 'mysql',
             'url' => env('DB_URL'),
@@ -147,7 +161,7 @@ return [
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
-            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_database_'),
+            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_') . '_database_'),
         ],
 
         'default' => [

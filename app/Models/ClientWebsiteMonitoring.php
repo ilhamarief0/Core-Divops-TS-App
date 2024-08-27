@@ -21,4 +21,21 @@ class ClientWebsiteMonitoring extends Model
     {
         return $this->belongsTo(WebsiteMonitoringType::class, 'website_monitoring_type_id');
     }
+
+    public function needToCheck(): bool
+    {
+        if (!$this->is_active) {
+            return false;
+        }
+
+        if (!$this->last_check_at) {
+            return true;
+        }
+
+        if ($this->last_check_at->diffInMinutes() < ($this->check_interval - 1)) {
+            return false;
+        }
+
+        return true;
+    }
 }

@@ -132,7 +132,7 @@ class ClientWebsiteMonitoringWebController extends Controller
     {
         return response()->json([
             'success' => true,
-            'message' => 'Detail Data Website',
+            'message' => 'Detail Data User',
             'data'    => $id
         ]);
     }
