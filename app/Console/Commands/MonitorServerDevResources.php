@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
-class UpdateWeeklyForumStats extends Command
+class MonitorServerDevResources extends Command
 {
     protected $signature = 'update:monitoringserver';
     protected $description = 'Update Server Dev Resources';
