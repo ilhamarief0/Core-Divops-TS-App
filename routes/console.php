@@ -11,12 +11,3 @@ Artisan::command('inspire', function () {
 Schedule::command('app:monitor-website')->everyMinute();
 
 Schedule::command('forum:weekly-recap')->everyMinute();
-
-
-Schedule::command(function () {
-
-    for ($i = 0; $i < 12; $i++) {
-        Artisan::call('monitor:resources');
-        sleep(5); 
-    }
-})->everyMinute();
