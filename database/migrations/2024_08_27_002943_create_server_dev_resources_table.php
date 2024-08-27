@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('server_dev_resources', function (Blueprint $table) {
             $table->id();
-            $table->float('cpu_usage');
-            $table->float('memory_usage');
-            $table->float('disk_usage');
+            $table->string('cpu_usage');
+            $table->string('memory_usage');
+            $table->string('disk_usage');
             $table->timestamps();
         });
     }

@@ -3,11 +3,10 @@
 namespace App\Console\Commands;
 
 use App\Models\ServerDevResource;
-use App\Models\WeeklyRecapForum;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
 
 class MonitorServerDevResources extends Command
 {
@@ -54,11 +53,11 @@ class MonitorServerDevResources extends Command
             $diskUsage = ($diskTotal - $diskFree) / $diskTotal * 100;
             Log::info('Disk Usage: ' . $diskUsage);
 
-            // Simpan ke database
+            // Simpan ke database sebagai integer
             ServerDevResource::create([
-                'cpu_usage' => $cpuLoad,
-                'memory_usage' => $memoryUsage,
-                'disk_usage' => $diskUsage,
+                'cpu_usage' => round($cpuLoad), // Menggunakan fungsi round() untuk membulatkan nilai
+                'memory_usage' => round($memoryUsage),
+                'disk_usage' => round($diskUsage),
             ]);
 
             Log::info('Data successfully saved to database.');
@@ -70,6 +69,20 @@ class MonitorServerDevResources extends Command
                 ServerDevResource::orderBy('id', 'asc')->limit($entriesToDelete)->delete();
                 Log::info("Deleted $entriesToDelete old entries from database.");
             }
+
+            // Hitung rata-rata penggunaan dan update data terakhir
+            $averageCpu = round(ServerDevResource::average('cpu_usage'));
+            $averageMemory = round(ServerDevResource::average('memory_usage'));
+            $averageDisk = round(ServerDevResource::average('disk_usage'));
+
+            // Simpan data rata-rata ke database
+            ServerDevResource::where('id', ServerDevResource::max('id'))->update([
+                'cpu_usage' => $averageCpu,
+                'memory_usage' => $averageMemory,
+                'disk_usage' => $averageDisk,
+            ]);
+
+            Log::info('Average data successfully updated in database.');
         } catch (\Exception $e) {
             Log::error('Error in MonitorServerResources command: ' . $e->getMessage());
         }
