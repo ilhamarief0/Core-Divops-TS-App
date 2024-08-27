@@ -100,8 +100,8 @@
                             <!--begin::Table head-->
                             <thead>
                                 <tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
-                                    <th class="min-w-150px">Item</th>
-                                    <th class="text-end pe-3 min-w-100px">Status</th>
+                                    <th class="min-w-150px">Divisi</th>
+                                    <th class="text-end pe-3 min-w-100px">Total Postingan</th>
                                 </tr>
                             </thead>
                             <!--end::Table head-->
