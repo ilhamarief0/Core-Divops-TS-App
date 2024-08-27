@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Http\Request;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClientMonitoringWebController;
 use App\Http\Controllers\ClientWebsiteMonitoringWebController;
@@ -7,6 +8,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MonitoringWebController;
 use App\Http\Controllers\ServerDevResourceMonitoringController;
 use App\Http\Controllers\WeeklyRecapsForumController;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 
@@ -52,4 +54,30 @@ Route::middleware('auth')->group(function () {
     Route::controller(ServerDevResourceMonitoringController::class)->group(function () {
         Route::get('/monitoringserver/serverdev', 'index')->name('sereverdev.index');
     });
+});
+
+Route::get('/api/server-resources', function (Request $request) {
+    // Ambil data resource server terbaru
+    $data = [
+        [
+            'category' => 'Disk Usage',
+            'value' => DB::table('server_resources')->latest()->value('disk_usage'),
+            'full' => 100,
+            'columnSettings' => ['fill' => '#67b7dc']
+        ],
+        [
+            'category' => 'Memory Usage',
+            'value' => DB::table('server_resources')->latest()->value('memory_usage'),
+            'full' => 100,
+            'columnSettings' => ['fill' => '#6794dc']
+        ],
+        [
+            'category' => 'CPU Usage',
+            'value' => DB::table('server_resources')->latest()->value('cpu_usage'),
+            'full' => 100,
+            'columnSettings' => ['fill' => '#dc67ab']
+        ]
+    ];
+
+    return response()->json(['data' => $data]);
 });

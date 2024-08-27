@@ -62,6 +62,14 @@ class MonitorServerDevResources extends Command
             ]);
 
             Log::info('Data successfully saved to database.');
+
+            // Hapus data lama setelah setiap 10 data
+            $totalEntries = ServerDevResource::count();
+            if ($totalEntries > 10) {
+                $entriesToDelete = $totalEntries - 10;
+                ServerDevResource::orderBy('id', 'asc')->limit($entriesToDelete)->delete();
+                Log::info("Deleted $entriesToDelete old entries from database.");
+            }
         } catch (\Exception $e) {
             Log::error('Error in MonitorServerResources command: ' . $e->getMessage());
         }
