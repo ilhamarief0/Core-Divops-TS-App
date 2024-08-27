@@ -21,15 +21,20 @@ class MonitorServerDevResources extends Command
         try {
             Log::info('Monitoring started.');
 
-            // Ambil nilai CPU usage untuk core 0
-            $cpuLoad = shell_exec("mpstat -P ALL 1 1 | grep 'Average' | grep '0' | awk '{print $3}'");
-            if ($cpuLoad === null) {
-                Log::error('Failed to retrieve CPU load for core 0.');
+            // Ambil nilai CPU usage untuk core 0 dan 1
+            $cpuLoadCore0 = shell_exec("mpstat -P 0 1 1 | grep 'Average' | awk '{print $3}'");
+            $cpuLoadCore1 = shell_exec("mpstat -P 1 1 1 | grep 'Average' | awk '{print $3}'");
+
+            if ($cpuLoadCore0 === null || $cpuLoadCore1 === null) {
+                Log::error('Failed to retrieve CPU load for core 0 or core 1.');
                 return;
             }
 
-            $cpuLoad = 100 - (float)trim($cpuLoad); // Menghitung penggunaan CPU (idle = 100% - usage%)
-            Log::info('CPU Load Core 0: ' . $cpuLoad);
+            $cpuLoadCore0 = 100 - (float)trim($cpuLoadCore0); // Menghitung penggunaan CPU (idle = 100% - usage%)
+            $cpuLoadCore1 = 100 - (float)trim($cpuLoadCore1); // Menghitung penggunaan CPU (idle = 100% - usage%)
+
+            $averageCpuLoad = ($cpuLoadCore0 + $cpuLoadCore1) / 2; // Menghitung rata-rata penggunaan CPU
+            Log::info('Average CPU Load (Core 0 and 1): ' . $averageCpuLoad);
 
             // Ambil nilai Memory usage
             $free = shell_exec('free');
@@ -59,7 +64,7 @@ class MonitorServerDevResources extends Command
 
             // Simpan ke database sebagai integer
             ServerDevResource::create([
-                'cpu_usage' => round($cpuLoad), // Menggunakan fungsi round() untuk membulatkan nilai
+                'cpu_usage' => round($averageCpuLoad), // Menggunakan fungsi round() untuk membulatkan nilai
                 'memory_usage' => round($memoryUsage),
                 'disk_usage' => round($diskUsage),
             ]);
