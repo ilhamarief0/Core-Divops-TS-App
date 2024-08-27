@@ -3,15 +3,21 @@
 namespace App\Console\Commands;
 
 use App\Models\ServerDevResource;
+use App\Models\WeeklyRecapForum;
 use Illuminate\Console\Command;
-use App\Models\ServerResource;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
-class MonitorServerResources extends Command
+class UpdateWeeklyForumStats extends Command
 {
-    protected $signature = 'monitor:resources';
+    protected $signature = 'update:monitoringserver';
+    protected $description = 'Update weekly forum stats';
 
-    protected $description = 'Monitor CPU, Memory, and Disk Usage of the Server';
+    public function __construct()
+    {
+        parent::__construct();
+    }
 
     public function handle()
     {
