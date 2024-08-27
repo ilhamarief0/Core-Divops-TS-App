@@ -9,6 +9,7 @@ use App\Http\Controllers\MonitoringWebController;
 use App\Http\Controllers\ServerDevResourceMonitoringController;
 use App\Http\Controllers\WeeklyRecapsForumController;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 
 
@@ -56,27 +57,26 @@ Route::middleware('auth')->group(function () {
     });
 });
 
+
+
 Route::get('/api/server-resources', function (Request $request) {
     // Ambil data resource server terbaru
-    $latestResource = DB::table('server_dev_resources')->latest('created_at')->first();
-
-    // Jika data terbaru tidak ditemukan, set nilai default
     $data = [
         [
             'category' => 'Disk Usage',
-            'value' => $latestResource ? $latestResource->disk_usage : 0,
+            'value' => DB::table('server_dev_resources')->latest()->value('disk_usage'),
             'full' => 100,
             'columnSettings' => ['fill' => '#67b7dc']
         ],
         [
             'category' => 'Memory Usage',
-            'value' => $latestResource ? $latestResource->memory_usage : 0,
+            'value' => DB::table('server_dev_resources')->latest()->value('memory_usage'),
             'full' => 100,
             'columnSettings' => ['fill' => '#6794dc']
         ],
         [
             'category' => 'CPU Usage',
-            'value' => $latestResource ? $latestResource->cpu_usage : 0,
+            'value' => DB::table('server_dev_resources')->latest()->value('cpu_usage'),
             'full' => 100,
             'columnSettings' => ['fill' => '#dc67ab']
         ]

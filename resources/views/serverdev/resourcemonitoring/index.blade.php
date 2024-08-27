@@ -53,7 +53,6 @@
 @endsection
 
 @push('scripts')
-@push('scripts')
 <script type="text/javascript">
     am5.ready(function () {
         var root = am5.Root.new("kt_amcharts_5");
@@ -122,10 +121,10 @@
         function updateChartData(data) {
             // Hapus seri lama jika ada
             if (series1) {
-                chart.series.removeValue(series1);
+                series1.dispose();
             }
             if (series2) {
-                chart.series.removeValue(series2);
+                series2.dispose();
             }
 
             // Tambahkan seri baru
@@ -175,8 +174,12 @@
                 url: '/api/server-resources', // Ganti dengan endpoint API Anda
                 method: 'GET',
                 success: function(response) {
-                    // Anggap data dari server sudah dalam format yang sesuai
-                    updateChartData(response.data);
+                    // Cek apakah response.data ada dan dalam format yang benar
+                    if (Array.isArray(response.data)) {
+                        updateChartData(response.data);
+                    } else {
+                        console.error('Data format is incorrect:', response.data);
+                    }
                 },
                 error: function(xhr, status, error) {
                     console.error('Error fetching data:', error);
@@ -193,6 +196,6 @@
 </script>
 @endpush
 
-@endpush
+
 
 
