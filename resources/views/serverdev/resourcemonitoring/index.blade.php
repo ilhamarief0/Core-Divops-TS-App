@@ -41,6 +41,10 @@
         <div id="kt_app_content_container" class="app-container container-fluid">
             <div class="card card-bordered">
                 <div class="card-body">
+                    <!-- Button to refresh the chart -->
+                    <button id="refreshChart" class="btn btn-primary mb-3">Refresh Chart</button>
+
+                    <!-- Chart container -->
                     <div id="kt_amcharts_5" style="height: 500px;"></div>
                 </div>
             </div>
@@ -116,10 +120,21 @@
             renderer: yRenderer
         }));
 
+        var series1, series2;
+
         function updateChartData(data) {
             yAxis.data.setAll(data);
 
-            var series1 = chart.series.push(am5radar.RadarColumnSeries.new(root, {
+            // Hapus seri lama jika ada
+            if (series1) {
+                chart.series.removeValue(series1);
+            }
+            if (series2) {
+                chart.series.removeValue(series2);
+            }
+
+            // Tambahkan seri baru
+            series1 = chart.series.push(am5radar.RadarColumnSeries.new(root, {
                 xAxis: xAxis,
                 yAxis: yAxis,
                 clustered: false,
@@ -137,7 +152,7 @@
 
             series1.data.setAll(data);
 
-            var series2 = chart.series.push(am5radar.RadarColumnSeries.new(root, {
+            series2 = chart.series.push(am5radar.RadarColumnSeries.new(root, {
                 xAxis: xAxis,
                 yAxis: yAxis,
                 clustered: false,
@@ -177,9 +192,11 @@
         // Ambil data pertama kali
         fetchData();
 
-        // Refresh data setiap 5 detik
-        setInterval(fetchData, 5000);
+        // Handle button click
+        $('#refreshChart').on('click', function() {
+            fetchData();
+        });
+
     }); // end am5.ready()
 </script>
-
 @endpush
