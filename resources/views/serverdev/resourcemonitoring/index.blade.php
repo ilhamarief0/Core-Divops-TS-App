@@ -124,19 +124,29 @@
                 const chartData = [{
                         category: "CPU Usage",
                         full: data.cpu_usage_percent,
-                        value: data.cpu_usage_percent
+                        value: data.cpu_usage_percent,
+                        columnSettings: {
+                            fill: "#FF5733" // Warna untuk CPU Usage
+                        }
                     },
                     {
                         category: "Memory Usage",
                         full: data.memory.usage_percent,
-                        value: data.memory.usage_percent
+                        value: data.memory.usage_percent,
+                        columnSettings: {
+                            fill: "#33FF57" // Warna untuk Memory Usage
+                        }
                     },
                     {
                         category: "Disk Usage",
                         full: data.disk.usage_percent,
-                        value: data.disk.usage_percent
+                        value: data.disk.usage_percent,
+                        columnSettings: {
+                            fill: "#3357FF" // Warna untuk Disk Usage
+                        }
                     }
                 ];
+
 
                 console.log('Chart Data:', chartData); // Tambahkan log ini untuk memeriksa data chart
 
