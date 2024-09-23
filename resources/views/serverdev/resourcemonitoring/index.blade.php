@@ -65,9 +65,7 @@
         am5.ready(function() {
             var root = am5.Root.new("kt_amcharts_5");
 
-            root.setThemes([
-                am5themes_Animated.new(root)
-            ]);
+            root.setThemes([am5themes_Animated.new(root)]);
 
             var chart = root.container.children.push(am5radar.RadarChart.new(root, {
                 panX: false,
@@ -82,15 +80,12 @@
             var cursor = chart.set("cursor", am5radar.RadarCursor.new(root, {
                 behavior: "zoomX"
             }));
-
             cursor.lineY.set("visible", false);
 
             var xRenderer = am5radar.AxisRendererCircular.new(root, {});
-
             xRenderer.labels.template.setAll({
                 radius: 10
             });
-
             xRenderer.grid.template.setAll({
                 forceHidden: true
             });
@@ -107,14 +102,12 @@
             var yRenderer = am5radar.AxisRendererRadial.new(root, {
                 minGridDistance: 20
             });
-
             yRenderer.labels.template.setAll({
                 centerX: am5.p100,
                 fontWeight: "500",
                 fontSize: 18,
                 templateField: "columnSettings"
             });
-
             yRenderer.grid.template.setAll({
                 forceHidden: true
             });
@@ -127,6 +120,11 @@
             var series1, series2;
 
             function updateChartData(data) {
+                if (!Array.isArray(data) || data.length === 0) {
+                    console.error('Invalid data format:', data);
+                    return;
+                }
+
                 yAxis.data.setAll(data);
 
                 // Hapus seri lama jika ada
@@ -181,11 +179,15 @@
 
             function fetchData() {
                 $.ajax({
-                    url: 'https://api.divops.devtechnos.com/api/resource', // Ganti dengan endpoint API Python Anda
+                    url: 'https://api.divops.devtechnos.com/api/resource',
                     method: 'GET',
                     success: function(response) {
-                        updateChartData(response
-                            .data); // Anggap API mengembalikan response dengan key "data"
+                        // Pastikan response.data ada dan valid
+                        if (response && response.data) {
+                            updateChartData(response.data);
+                        } else {
+                            console.error('Invalid API response:', response);
+                        }
                     },
                     error: function(xhr, status, error) {
                         console.error('Error fetching data:', error);
@@ -193,10 +195,8 @@
                 });
             }
 
-            // Ambil data pertama kali
             fetchData();
 
-            // Handle button click untuk refresh chart
             $('#refreshChart').on('click', function() {
                 fetchData();
             });
