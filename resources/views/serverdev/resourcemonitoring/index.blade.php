@@ -126,7 +126,7 @@
                         full: data.cpu_usage_percent,
                         value: data.cpu_usage_percent,
                         columnSettings: {
-                            fill: "#FF5733" // Warna untuk CPU Usage
+                            fill: "#67b7dc" // Warna untuk CPU Usage
                         }
                     },
                     {
@@ -134,7 +134,7 @@
                         full: data.memory.usage_percent,
                         value: data.memory.usage_percent,
                         columnSettings: {
-                            fill: "#33FF57" // Warna untuk Memory Usage
+                            fill: "#6794dc" // Warna untuk Memory Usage
                         }
                     },
                     {
@@ -142,7 +142,7 @@
                         full: data.disk.usage_percent,
                         value: data.disk.usage_percent,
                         columnSettings: {
-                            fill: "#3357FF" // Warna untuk Disk Usage
+                            fill: "#dc67ab" // Warna untuk Disk Usage
                         }
                     }
                 ];
