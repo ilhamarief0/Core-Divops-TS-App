@@ -120,12 +120,25 @@
             var series1, series2;
 
             function updateChartData(data) {
-                if (!Array.isArray(data) || data.length === 0) {
-                    console.error('Invalid data format:', data);
-                    return;
-                }
+                // Buat data untuk chart berdasarkan respons
+                const chartData = [{
+                        category: "CPU Usage",
+                        full: data.cpu_usage_percent,
+                        value: data.cpu_usage_percent
+                    },
+                    {
+                        category: "Memory Usage",
+                        full: data.memory.usage_percent,
+                        value: data.memory.usage_percent
+                    },
+                    {
+                        category: "Disk Usage",
+                        full: data.disk.usage_percent,
+                        value: data.disk.usage_percent
+                    }
+                ];
 
-                yAxis.data.setAll(data);
+                yAxis.data.setAll(chartData);
 
                 // Hapus seri lama jika ada
                 if (series1) {
@@ -152,7 +165,7 @@
                     cornerRadius: 20
                 });
 
-                series1.data.setAll(data);
+                series1.data.setAll(chartData);
 
                 series2 = chart.series.push(am5radar.RadarColumnSeries.new(root, {
                     xAxis: xAxis,
@@ -170,12 +183,13 @@
                     templateField: "columnSettings"
                 });
 
-                series2.data.setAll(data);
+                series2.data.setAll(chartData);
 
                 series1.appear(1000);
                 series2.appear(1000);
                 chart.appear(1000, 100);
             }
+
 
             function fetchData() {
                 $.ajax({
