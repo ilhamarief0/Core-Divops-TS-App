@@ -138,6 +138,8 @@
                     }
                 ];
 
+                console.log('Chart Data:', chartData); // Tambahkan log ini untuk memeriksa data chart
+
                 yAxis.data.setAll(chartData);
 
                 // Hapus seri lama jika ada
@@ -191,23 +193,22 @@
             }
 
 
+
             function fetchData() {
                 $.ajax({
                     url: 'https://api.divops.devtechnos.com/api/resource',
                     method: 'GET',
                     success: function(response) {
-                        // Pastikan response.data ada dan valid
-                        if (response && response.data) {
-                            updateChartData(response.data);
-                        } else {
-                            console.error('Invalid API response:', response);
-                        }
+                        console.log('API Response:', response); // Tambahkan log ini
+                        updateChartData(
+                            response); // Pastikan Anda memanggil updateChartData dengan benar
                     },
                     error: function(xhr, status, error) {
                         console.error('Error fetching data:', error);
                     }
                 });
             }
+
 
             fetchData();
 
