@@ -181,7 +181,7 @@
 
             function fetchData() {
                 $.ajax({
-                    url: 'http://localhost:5000/api/resource', // Ganti dengan endpoint API Python Anda
+                    url: 'http://10.128.0.2:5000/api/resource', // Ganti dengan endpoint API Python Anda
                     method: 'GET',
                     success: function(response) {
                         updateChartData(response
