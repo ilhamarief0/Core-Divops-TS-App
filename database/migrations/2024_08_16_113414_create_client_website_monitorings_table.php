@@ -21,6 +21,9 @@ return new class extends Migration
             $table->integer('warning_threshold')->default(5000);
             $table->integer('down_threshold')->default(10000);
             $table->integer('notify_user_interval')->default(5);
+            $table->timestamp('last_check_at')->nullable(); // Ubah ke timestamp
+            $table->timestamp('last_notify_user_at')->nullable();
+            $table->timestamp('visibility')->nullable();
             $table->timestamps();
         });
     }

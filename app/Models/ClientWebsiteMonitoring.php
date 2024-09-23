@@ -11,7 +11,11 @@ class ClientWebsiteMonitoring extends Model
 
     protected $fillable = ['name', 'url', 'is_active', 'client_monitoring_id', 'website_monitoring_type_id', 'warning_threshold', 'down_threshold', 'notify_user_interval'];
 
-
+    protected $casts = [
+        'last_check_at' => 'datetime',
+        'last_notify_user_at' => 'datetime',
+        'visibility' => 'datetime',
+    ];
 
     public function client()
     {
@@ -33,6 +37,23 @@ class ClientWebsiteMonitoring extends Model
         }
 
         if ($this->last_check_at->diffInMinutes() < ($this->check_interval - 1)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function canNotifyUser(): bool
+    {
+        if (!$this->is_active) {
+            return false;
+        }
+
+        if (!$this->last_notify_user_at) {
+            return true;
+        }
+
+        if ($this->last_notify_user_at->diffInMinutes() < ($this->notify_user_interval - 1)) {
             return false;
         }
 

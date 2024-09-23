@@ -26,11 +26,11 @@ class MonitorWebsite extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): void
     {
         Log::info('Starting MonitorWebsite command.');
 
-        $websiteClients = ClientWebsiteMonitoring::where('is_active', 1)->get(); // Add your desired URLs here
+        $websiteClients = ClientWebsiteMonitoring::where('is_active', 1)->get();
 
         foreach ($websiteClients as $customerSite) {
             Log::info('Checking URL: ' . $customerSite->url);
@@ -40,7 +40,7 @@ class MonitorWebsite extends Command
                 continue;
             }
 
-            dispatch(new RunCheck($customerSite));
+            RunCheck::dispatch($customerSite);
             Log::info('Dispatched RunCheck job for URL: ' . $customerSite->url);
         }
 

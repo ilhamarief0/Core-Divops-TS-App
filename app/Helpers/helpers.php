@@ -7,23 +7,23 @@ use Illuminate\Support\Facades\Log;
 
 
 if (!function_exists('notifyTelegramUser')) {
-    function notifyTelegramUser(ClientWebsiteMonitoring $customerSite, Collection $responseTimes, $status = "Slow"): void
+    function notifyTelegramUser(ClientWebsiteMonitoring $websiteClient, Collection $responseTimes, $status = "Slow"): void
     {
-        if (is_null($customerSite->vendor)) {
-            Log::channel('daily')->info('Missing vendor for customer site', $customerSite->toArray());
+        if (is_null($websiteClient->client_monitoring)) {
+            Log::channel('daily')->info('Missing vendor for customer site', $websiteClient->toArray());
             return;
         }
 
-        $vendor = $customerSite->vendor;
-        if (is_null($vendor->bot_token) || is_null($vendor->chat_id)) {
-            Log::channel('daily')->info('Missing bot_token or chat_id for vendor', $vendor->toArray());
+        $client_monitoring = $websiteClient->client_monitoring;
+        if (is_null($client_monitoring->bot_token) || is_null($client_monitoring->chat_id)) {
+            Log::channel('daily')->info('Missing bot_token or chat_id for client_monitoring', $client_monitoring->toArray());
             return;
         }
 
-        $endpoint = 'https://api.telegram.org/bot' . $vendor->bot_token . '/sendMessage';
+        $endpoint = 'https://api.telegram.org/bot' . $client_monitoring->bot_token . '/sendMessage';
         $text = "";
         $text .= "Uptime: Website $status";
-        $text .= "\n\n" . $customerSite->name . ' (' . $customerSite->url . ')';
+        $text .= "\n\n" . $websiteClient->name . ' (' . $websiteClient->url . ')';
         $text .= "\n\nLast 5 response time:";
         $text .= "\n";
         foreach ($responseTimes as $responseTime) {
@@ -32,14 +32,14 @@ if (!function_exists('notifyTelegramUser')) {
         }
         $text .= "\nCheck here:";
 
-        if ($customerSite->visibility == "public") {
-            $text .= "\n" . route('customer_sites.public-show', [$customerSite->id]);
+        if ($websiteClient->visibility == "public") {
+            $text .= "\n" . route('customer_sites.public-show', [$websiteClient->id]);
         } else {
-            $text .= "\n" . route('customer_sites.show', [$customerSite->id]);
+            $text .= "\n" . route('customer_sites.show', [$websiteClient->id]);
         }
 
         Http::post($endpoint, [
-            'chat_id' => $vendor->chat_id,
+            'chat_id' => $client_monitoring->website_id,
             'text' => $text,
         ]);
     }

@@ -107,25 +107,43 @@ class RunCheck implements ShouldQueue
 
         Log::info('Logged monitoring result for URL: ' . $websiteClient->url . ' with response time: ' . $responseTime . 'ms and status code: ' . $statusCode);
 
-        $websiteClient->last_check_at = Carbon::now();
+        // Update last_check_at using Carbon
+        $websiteClient->last_check_at = Carbon::now()->toDateTimeString();
         $websiteClient->save();
 
-        // NOTIFY USER IF NEEDED
-        if (!empty(config('services.telegram_notifier.token'))) {
-            if ($forceNotify && $websiteClient->canNotifyUser()) {
-                $responseTimes = MonitoringLog::query()
-                    ->where('customer_site_id', $websiteClient->id)
-                    ->orderBy('created_at', 'desc')
-                    ->take(5)
-                    ->get(['response_time', 'status_code', 'created_at']);
+        if ($forceNotify && $websiteClient->canNotifyUser()) {
+            $responseTimes = MonitoringLog::query()
+                ->where('website_id', $websiteClient->id)
+                ->orderBy('created_at', 'desc')
+                ->take(5)
+                ->get(['response_time', 'status_code', 'created_at']);
 
-                notifyTelegramUser($websiteClient, $responseTimes, $notifyStatus);
-                $websiteClient->last_notify_user_at = Carbon::now();
-                $websiteClient->save();
+            Log::info('Calling notifyTelegramUser for URL: ' . $websiteClient->url . ' with status: ' . $notifyStatus);
 
-                Log::info('User notified for URL: ' . $websiteClient->url . ' with status: ' . $notifyStatus);
-            }
+            notifyTelegramUser($websiteClient, $responseTimes, $notifyStatus);
+
+            $websiteClient->last_notify_user_at = Carbon::now()->toDateTimeString();
+            $websiteClient->save();
+
+            Log::info('User notified for URL: ' . $websiteClient->url . ' with status: ' . $notifyStatus);
         }
+        // // NOTIFY USER IF NEEDED
+        // if (!empty(config('services.telegram_notifier.token'))) {
+        //     Log::info('Telegram token found, proceeding to check notification conditions.');
+
+        //     if ($forceNotify) {
+        //         Log::info('forceNotify is true for URL: ' . $websiteClient->url);
+        //     } else {
+        //         Log::info('forceNotify is false for URL: ' . $websiteClient->url);
+        //     }
+
+        //     if ($websiteClient->canNotifyUser()) {
+        //         Log::info('User can be notified for URL: ' . $websiteClient->url);
+        //     } else {
+        //         Log::info('User cannot be notified for URL: ' . $websiteClient->url);
+        //     }
+        // }
+
 
         Log::info('Completed RunCheck job for URL: ' . $this->websiteClient->url);
     }

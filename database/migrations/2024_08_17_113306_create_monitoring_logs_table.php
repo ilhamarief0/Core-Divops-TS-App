@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('website_id');
             $table->foreign('website_id')->references('id')->on('client_website_monitorings')->onDelete('cascade');
             $table->string('url')->nullable();
-            $table->integer('response_code')->nullable();
+            $table->integer('response_time')->nullable();
             $table->integer('status_code')->nullable();
             $table->timestamps();
         });
