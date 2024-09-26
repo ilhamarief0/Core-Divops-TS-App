@@ -10,8 +10,8 @@ Artisan::command('inspire', function () {
 
 Schedule::command('app:monitor-website')->everyMinute();
 
-Schedule::command('notify-user')->everyMinute();
+// Schedule::command('notify-user')->everyMinute();
 
-// Schedule::command('update:weekly-forum-stats')->fridays()->at('08:00');
+Schedule::command('update:weekly-forum-stats')->fridays()->at('08:00');
 
 // Schedule::command('update:monitoringserver')->everyMinute();

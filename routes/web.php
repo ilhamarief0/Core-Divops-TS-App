@@ -81,6 +81,5 @@ Route::get('/api/server-resources', function (Request $request) {
             'columnSettings' => ['fill' => '#dc67ab']
         ]
     ];
-
     return response()->json(['data' => $data]);
 });

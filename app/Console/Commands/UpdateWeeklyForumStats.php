@@ -28,7 +28,7 @@ class UpdateWeeklyForumStats extends Command
 
             // Calculate the week number within the month
             $weekOfMonth = ceil($startOfWeek->day / 7);
-
+ 
             // Fetch the tags from the external database, limited to IDs 2 to 6
             $tags = DB::connection('forum')
                 ->table('flw8_tags')

@@ -14,7 +14,7 @@ class ClientMonitoring extends Model
 
     public function website()
     {
-        return $this->hasOne(ClientWebsiteMonitoring::class, 'client_monitoring_id');
+        return $this->hasMany(ClientWebsiteMonitoring::class, 'client_monitoring_id');
     }
 
     public function creator()
