@@ -22,13 +22,13 @@ class UpdateWeeklyForumStats extends Command
     public function handle()
     {
         try {
-            // Get the start and end of the week (Monday to Friday)
-            $startOfWeek = Carbon::now()->startOfWeek()->addDays(0); // Monday
-            $endOfWeek = Carbon::now()->startOfWeek()->addDays(4); // Friday
+            // Get the start of the week (last Friday) and the end of the week (next Friday)
+            $startOfWeek = Carbon::now()->previous(Carbon::FRIDAY)->startOfDay(); // Last Friday
+            $endOfWeek = Carbon::now()->next(Carbon::FRIDAY)->endOfDay(); // Next Friday
 
             // Calculate the week number within the month
             $weekOfMonth = ceil($startOfWeek->day / 7);
- 
+
             // Fetch the tags from the external database, limited to IDs 2 to 6
             $tags = DB::connection('forum')
                 ->table('flw8_tags')
@@ -36,7 +36,7 @@ class UpdateWeeklyForumStats extends Command
                 ->get(['id', 'name']);
 
             foreach ($tags as $tag) {
-                // Count approved discussions from Monday to Friday for each tag
+                // Count approved discussions from last Friday to next Friday for each tag
                 $totalPostings = DB::connection('forum')
                     ->table('flw8_discussion_tag')
                     ->join('flw8_discussions', 'flw8_discussion_tag.discussion_id', '=', 'flw8_discussions.id')
