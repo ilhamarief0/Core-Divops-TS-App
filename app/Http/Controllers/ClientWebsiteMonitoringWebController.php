@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\ClientMonitoring;
 use App\Models\ClientWebsiteMonitoring;
 use App\Models\WebsiteMonitoringType;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
 
 class ClientWebsiteMonitoringWebController extends Controller
@@ -21,7 +23,7 @@ class ClientWebsiteMonitoringWebController extends Controller
                 ->addIndexColumn()
 
                 ->addColumn('name', function ($row) {
-                    return '<a class="text-gray-800 text-hover-primary mb-12">' . $row->name . '</a>';
+                    return '<a href="' . route('clientwebsitemonitoring.show', $row->id) . '" class="text-gray-800 text-hover-primary mb-12">' . $row->name . '</a>';
                 })
                 ->addColumn('url', function ($row) {
                     return '<span class="badge badge-light-secondary">' . $row->url . '</span>';
@@ -157,5 +159,49 @@ class ClientWebsiteMonitoringWebController extends Controller
         $id->update($validatedData);
 
         return response()->json(['message' => 'Client Updated successfully'], 200);
+    }
+
+    public function show(Request $request, ClientWebsiteMonitoring $customerSite)
+    {
+        $timeRange = request('time_range', '1h');
+        $startTime = $this->getStartTimeByTimeRange($timeRange); // Updated method name
+
+        if ($request->get('start_time')) {
+            $timeRange = null;
+            $startTime = Carbon::parse($request->get('start_time'));
+        }
+
+        $endTime = Carbon::now();
+        if ($request->get('end_time')) {
+            $endTime = Carbon::parse($request->get('end_time'));
+        }
+
+        $logQuery = DB::table('monitoring_logs');
+        $logQuery->where('website_id', $customerSite->id);
+        $logQuery->whereBetween('created_at', [$startTime, $endTime]);
+        $monitoringLogs = $logQuery->get(['response_time', 'created_at']);
+
+        $chartData = [];
+        foreach ($monitoringLogs as $monitoringLog) {
+            $chartData[] = ['x' => $monitoringLog->created_at, 'y' => $monitoringLog->response_time];
+        }
+
+        return view('monitoringweb.website.show', compact('customerSite', 'chartData', 'startTime', 'endTime', 'timeRange'));
+    }
+
+    private function getStartTimeByTimeRange($timeRange)
+    {
+        switch ($timeRange) {
+            case '1h':
+                return Carbon::now()->subHour();
+            case '6h':
+                return Carbon::now()->subHours(6);
+            case '24h':
+                return Carbon::now()->subDay();
+            case '7d':
+                return Carbon::now()->subDays(7);
+            default:
+                return Carbon::now()->subHour();
+        }
     }
 }

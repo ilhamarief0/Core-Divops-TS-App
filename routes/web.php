@@ -46,6 +46,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/monitoringweb/website/delete/{id}', 'delete')->name('clientwebsitemonitroing.delete');
         Route::get('/monitoringweb/website/getData/{id}', 'getData')->name('clientwebsitemonitoring.getdata');
         Route::post('/monitoringweb/website/update/{id}', 'update')->name('clientwebsitemonitoring.update');
+        Route::get('/monitoringweb/website/show/{id}', 'show')->name('clientwebsitemonitoring.show');
     });
 
     Route::controller(WeeklyRecapsForumController::class)->group(function () {

@@ -26,6 +26,8 @@
         type="text/css" />
     <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet"
         type="text/css" />
+
+    @stack('styles')
     <!--end::Vendor Stylesheets-->
     <!--begin::Global Stylesheets Bundle(mandatory for all pages)-->
     <link href="{{ asset('assets/plugins/global/plugins.bundle.css') }}" rel="stylesheet" type="text/css" />
@@ -116,6 +118,7 @@
     <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
     <!--end::Vendors Javascript-->
     @stack('scripts')
+    @stack('scriptsdatapicker')
     <script type="text/javascript">
         $(document).ready(function() {
             $('#logout-btn').on('click', function(e) {
@@ -149,6 +152,7 @@
     <script src="{{ asset('assets/js/custom/utilities/modals/new-target.js') }}"></script>
     <script src="{{ asset('assets/js/custom/utilities/modals/users-search.js') }}"></script>
     <!--end::Custom Javascript-->
+
     <!--end::Javascript-->
 </body>
 <!--end::Body-->
