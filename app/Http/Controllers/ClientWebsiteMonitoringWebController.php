@@ -7,6 +7,7 @@ use App\Models\ClientWebsiteMonitoring;
 use App\Models\WebsiteMonitoringType;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -23,8 +24,9 @@ class ClientWebsiteMonitoringWebController extends Controller
                 ->addIndexColumn()
 
                 ->addColumn('name', function ($row) {
-                    return '<a href="' . route('clientwebsitemonitoring.show', $row->id) . '" class="text-gray-800 text-hover-primary mb-12">' . $row->name . '</a>';
+                    return '<a href="' . route('clientwebsitemonitoring.show', Crypt::encryptString($row->id)) . '" class="text-gray-800 text-hover-primary mb-12">' . $row->name . '</a>';
                 })
+
                 ->addColumn('url', function ($row) {
                     return '<span class="badge badge-light-secondary">' . $row->url . '</span>';
                 })
@@ -161,10 +163,39 @@ class ClientWebsiteMonitoringWebController extends Controller
         return response()->json(['message' => 'Client Updated successfully'], 200);
     }
 
-    public function show(Request $request, ClientWebsiteMonitoring $customerSite)
+    private function getStartTimeByTimeRange(string $timeRange): Carbon
     {
+        switch ($timeRange) {
+            case '6h':
+                return Carbon::now()->subHours(6);
+            case '24h':
+                return Carbon::now()->subHours(24);
+            case '7d':
+                return Carbon::now()->subDays(7);
+            case '14d':
+                return Carbon::now()->subDays(14);
+            case '30d':
+                return Carbon::now()->subDays(30);
+            case '3Mo':
+                return Carbon::now()->subMonths(3);
+            case '6Mo':
+                return Carbon::now()->subMonths(6);
+            default:
+                return Carbon::now()->subHours(1);
+        }
+    }
+
+    public function show(Request $request, $encryptedCustomerSiteId)
+    {
+        // Dekripsi ID yang dienkripsi
+        $customerSiteId = Crypt::decryptString($encryptedCustomerSiteId);
+
+        // Ambil data website menggunakan ID yang sudah didekripsi
+        $customerSite = ClientWebsiteMonitoring::findOrFail($customerSiteId);
+
+        // Lanjutkan proses logika lain yang sudah Anda buat
         $timeRange = request('time_range', '1h');
-        $startTime = $this->getStartTimeByTimeRange($timeRange); // Updated method name
+        $startTime = $this->getStartTimeByTimeRange($timeRange);
 
         if ($request->get('start_time')) {
             $timeRange = null;
@@ -187,21 +218,5 @@ class ClientWebsiteMonitoringWebController extends Controller
         }
 
         return view('monitoringweb.website.show', compact('customerSite', 'chartData', 'startTime', 'endTime', 'timeRange'));
-    }
-
-    private function getStartTimeByTimeRange($timeRange)
-    {
-        switch ($timeRange) {
-            case '1h':
-                return Carbon::now()->subHour();
-            case '6h':
-                return Carbon::now()->subHours(6);
-            case '24h':
-                return Carbon::now()->subDay();
-            case '7d':
-                return Carbon::now()->subDays(7);
-            default:
-                return Carbon::now()->subHour();
-        }
     }
 }

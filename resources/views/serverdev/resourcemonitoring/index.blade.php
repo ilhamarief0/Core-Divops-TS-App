@@ -218,8 +218,6 @@
                     }
                 });
             }
-
-
             fetchData();
 
             $('#refreshChart').on('click', function() {

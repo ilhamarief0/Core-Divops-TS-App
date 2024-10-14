@@ -26,6 +26,12 @@ class ClientWebsiteMonitoring extends Model
         return $this->belongsTo(WebsiteMonitoringType::class, 'website_monitoring_type_id');
     }
 
+
+    public function monitoringLogs()
+    {
+        return $this->hasMany(MonitoringLog::class, 'website_id'); // Pastikan ini sesuai dengan kolom foreign key
+    }
+
     public function needToCheck(): bool
     {
         if (!$this->is_active) {
@@ -58,5 +64,15 @@ class ClientWebsiteMonitoring extends Model
         }
 
         return true;
+    }
+
+    public function getYAxisMaxAttribute()
+    {
+        return $this->down_threshold + 2000;
+    }
+
+    public function getYAxisTickAmountAttribute()
+    {
+        return $this->y_axis_max / 1000;
     }
 }

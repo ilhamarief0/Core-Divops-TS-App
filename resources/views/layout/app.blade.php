@@ -28,6 +28,7 @@
         type="text/css" />
 
     @stack('styles')
+    @livewireStyles
     <!--end::Vendor Stylesheets-->
     <!--begin::Global Stylesheets Bundle(mandatory for all pages)-->
     <link href="{{ asset('assets/plugins/global/plugins.bundle.css') }}" rel="stylesheet" type="text/css" />

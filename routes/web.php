@@ -46,7 +46,9 @@ Route::middleware('auth')->group(function () {
         Route::delete('/monitoringweb/website/delete/{id}', 'delete')->name('clientwebsitemonitroing.delete');
         Route::get('/monitoringweb/website/getData/{id}', 'getData')->name('clientwebsitemonitoring.getdata');
         Route::post('/monitoringweb/website/update/{id}', 'update')->name('clientwebsitemonitoring.update');
-        Route::get('/monitoringweb/website/show/{id}', 'show')->name('clientwebsitemonitoring.show');
+        Route::get('/monitoringweb/website/show/{customerSite}', 'show')
+            ->name('clientwebsitemonitoring.show')
+            ->where('customerSite', '.*');
     });
 
     Route::controller(WeeklyRecapsForumController::class)->group(function () {
@@ -56,31 +58,4 @@ Route::middleware('auth')->group(function () {
     Route::controller(ServerDevResourceMonitoringController::class)->group(function () {
         Route::get('/monitoringserver/serverdev', 'index')->name('sereverdev.index');
     });
-});
-
-
-
-Route::get('/api/server-resources', function (Request $request) {
-    // Ambil data resource server terbaru
-    $data = [
-        [
-            'category' => 'Disk Usage',
-            'value' => DB::table('server_dev_resources')->latest()->value('disk_usage'),
-            'full' => 100,
-            'columnSettings' => ['fill' => '#67b7dc']
-        ],
-        [
-            'category' => 'Memory Usage',
-            'value' => DB::table('server_dev_resources')->latest()->value('memory_usage'),
-            'full' => 100,
-            'columnSettings' => ['fill' => '#6794dc']
-        ],
-        [
-            'category' => 'CPU Usage',
-            'value' => DB::table('server_dev_resources')->latest()->value('cpu_usage'),
-            'full' => 100,
-            'columnSettings' => ['fill' => '#dc67ab']
-        ]
-    ];
-    return response()->json(['data' => $data]);
 });

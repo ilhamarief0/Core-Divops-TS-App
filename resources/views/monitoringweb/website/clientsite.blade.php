@@ -1,4 +1,7 @@
 @extends('layout.app')
+@push('styles')
+    <link rel="stylesheet" href="{{ url('css/plugins/jquery.datetimepicker.css') }}">
+@endpush
 @section('content')
     <!--begin::Content wrapper-->
     <div class="d-flex flex-column flex-column-fluid">
@@ -14,19 +17,13 @@
                     <!--end::Title-->
                     <!--begin::Breadcrumb-->
                     <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
-                        <!--begin::Item-->
                         <li class="breadcrumb-item text-muted">
                             <a href="index.html" class="text-muted text-hover-primary">Home</a>
                         </li>
-                        <!--end::Item-->
-                        <!--begin::Item-->
                         <li class="breadcrumb-item">
                             <span class="bullet bg-gray-500 w-5px h-2px"></span>
                         </li>
-                        <!--end::Item-->
-                        <!--begin::Item-->
                         <li class="breadcrumb-item text-muted">Dashboards</li>
-                        <!--end::Item-->
                     </ul>
                     <!--end::Breadcrumb-->
                 </div>
@@ -44,141 +41,127 @@
                         <div class="card">
                             <div class="card-header mt-10">
 
-                                <h4 class="">{{ __('customer_site.customer_site') }}</h4>
+                                <h4 class="">Website : {{ $customerSite->name }}</h4>
                             </div>
                             <div class="card-body">
-                                {{-- <table class="table table-sm">
+                                <table class="table table-sm">
                                     <tbody>
                                         <tr>
-                                            <td>{{ __('customer_site.name') }}</td>
+                                            <td>Site Name</td>
                                             <td>{{ $customerSite->name }}</td>
                                         </tr>
-                                        @auth
-                                            <tr>
-                                                <td>{{ __('customer_site.url') }}</td>
-                                                <td><a target="_blank"
-                                                        href="{{ $customerSite->url }}">{{ $customerSite->url }}</a></td>
-                                            </tr>
-                                        @endauth
                                         <tr>
-                                            <td>{{ __('vendor.vendor') }}</td>
-                                            <td>{{ $customerSite->vendor->name }}</td>
+                                            <td>Site Url</td>
+                                            <td><a target="_blank"
+                                                    href="{{ $customerSite->url }}">{{ $customerSite->url }}</a></td>
                                         </tr>
                                         <tr>
-                                            <td>{{ __('customer_site.type') }}</td>
+                                            <td>Site Client</td>
+                                            <td>{{ $customerSite->client->name }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Site Type</td>
                                             <td>{{ $customerSite->type->name }}</td>
                                         </tr>
                                         <tr>
-                                            <td>{{ __('app.status') }}</td>
+                                            <td>Site Status</td>
                                             <td>{{ $customerSite->is_active }}</td>
                                         </tr>
                                         <tr>
-                                            <td>{{ __('customer_site.check_interval') }}</td>
+                                            <td>Site Check Interval</td>
                                             <td>
-                                                {{ __('time.every') }}
-                                                {{ $customerSite->check_interval }}
-                                                {{ trans_choice('time.minutes', $customerSite->check_interval) }}
+                                                Every {{ $customerSite->check_interval }} Minutes
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>{{ __('customer_site.priority_code') }}</td>
+                                            <td>Site Priority Code</td>
                                             <td>{{ $customerSite->priority_code }}</td>
                                         </tr>
                                         <tr>
-                                            <td>{{ __('customer_site.warning_threshold') }}</td>
-                                            <td>{{ $customerSite->warning_threshold }} {{ __('time.miliseconds') }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>{{ __('customer_site.down_threshold') }}</td>
-                                            <td>{{ $customerSite->down_threshold }} {{ __('time.miliseconds') }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>{{ __('customer_site.notify_user_interval') }}</td>
-                                            <td>
-                                                {{ __('time.every') }}
-                                                {{ $customerSite->notify_user_interval }}
-                                                {{ trans_choice('time.minutes', $customerSite->notify_user_interval) }}
+                                            <td>Site Warning Treshold</td>
+                                            <td>{{ $customerSite->warning_threshold }} ms
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>{{ __('customer_site.last_check_at') }}</td>
+                                            <td>Site Down Treshold</td>
+                                            <td>{{ $customerSite->down_threshold }} ms</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Site Notify User Interval</td>
+                                            <td>
+                                                Every {{ $customerSite->notify_user_interval }} Minutes
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Site Last Check At</td>
                                             <td>{{ optional($customerSite->last_check_at)->diffForHumans() }}</td>
                                         </tr>
                                         <tr>
-                                            <td>{{ __('customer_site.last_notify_user_at') }}</td>
-                                            <td>{{ optional($customerSite->last_notify_user_at)->diffForHumans() }}</td>
+                                            <td>Site Last Notify User At</td>
+                                            <td>{{ optional($customerSite->last_notify_user_at)->diffForHumans() }}
+                                            </td>
                                         </tr>
                                         <tr>
-                                            <td>{{ __('app.created_at') }}</td>
+                                            <td>Site Created At</td>
                                             <td>{{ $customerSite->created_at }}</td>
                                         </tr>
                                         <tr>
-                                            <td>{{ __('app.updated_at') }}</td>
+                                            <td>Site Updated At</td>
                                             <td>{{ $customerSite->updated_at }}</td>
                                         </tr>
                                     </tbody>
-                                </table> --}}
+                                </table>
                             </div>
                             <div class="card-footer">
-                                {{-- @can('update', $customerSite)
-                                    {{ link_to_route('customer_sites.edit', __('customer_site.edit'), [$customerSite], ['class' => 'btn btn-warning', 'id' => 'edit-customer_site-' . $customerSite->id]) }}
-                                @endcan
-                                @auth
-                                    {{ link_to_route('dashboard.view', __('app.back_to_dashboard'), [], ['class' => 'btn btn-primary']) }}
-                                @endauth --}}
+                                {{-- <a href="{{ route('customer_sites.edit', $customerSite) }}" class="btn btn-warning">
+                                    {{ __('customer_site.edit') }}
+                                </a> --}}
+                                {{-- <a href="{{ route('dashboard.view') }}" class="btn btn-primary">
+                                    {{ __('app.back_to_dashboard') }}
+                                </a> --}}
                             </div>
                         </div>
                     </div>
                     <div class="col-md-8 order-1 order-md-2">
                         <div class="py-4 py-md-0 clearfix">
                             <div class="btn-group mb-3" role="group">
-                                {{-- {{ link_to_route(Route::currentRouteName(), '1h', [$customerSite, 'time_range' => '1h'], ['class' => 'px-2 btn btn-outline-primary' . ($timeRange == '1h' ? ' active' : '')]) }}
-                                {{ link_to_route(Route::currentRouteName(), '6h', [$customerSite, 'time_range' => '6h'], ['class' => 'px-2 btn btn-outline-primary' . ($timeRange == '6h' ? ' active' : '')]) }}
-                                {{ link_to_route(Route::currentRouteName(), '24h', [$customerSite, 'time_range' => '24h'], ['class' => 'px-2 btn btn-outline-primary' . ($timeRange == '24h' ? ' active' : '')]) }}
-                                {{ link_to_route(Route::currentRouteName(), '7d', [$customerSite, 'time_range' => '7d'], ['class' => 'px-2 btn btn-outline-primary' . ($timeRange == '7d' ? ' active' : '')]) }}
-                                {{ link_to_route(Route::currentRouteName(), '14d', [$customerSite, 'time_range' => '14d'], ['class' => 'px-2 btn btn-outline-primary' . ($timeRange == '14d' ? ' active' : '')]) }}
-                                {{ link_to_route(Route::currentRouteName(), '30d', [$customerSite, 'time_range' => '30d'], ['class' => 'px-2 btn btn-outline-primary' . ($timeRange == '30d' ? ' active' : '')]) }}
-                                {{ link_to_route(Route::currentRouteName(), '3Mo', [$customerSite, 'time_range' => '3Mo'], ['class' => 'px-2 btn btn-outline-primary' . ($timeRange == '3Mo' ? ' active' : '')]) }}
-                                {{ link_to_route(Route::currentRouteName(), '6Mo', [$customerSite, 'time_range' => '6Mo'], ['class' => 'px-2 btn btn-outline-primary' . ($timeRange == '6Mo' ? ' active' : '')]) }} --}}
+                                <a href="{{ route(Route::currentRouteName(), [Crypt::encryptString($customerSite->id), 'time_range' => '1h']) }}"
+                                    class="px-2 btn btn-outline-primary {{ $timeRange == '1h' ? 'active' : '' }}">1h</a>
+                                <a href="{{ route(Route::currentRouteName(), [Crypt::encryptString($customerSite->id), 'time_range' => '6h']) }}"
+                                    class="px-2 btn btn-outline-primary {{ $timeRange == '6h' ? 'active' : '' }}">6h</a>
+                                <a href="{{ route(Route::currentRouteName(), [Crypt::encryptString($customerSite->id), 'time_range' => '24h']) }}"
+                                    class="px-2 btn btn-outline-primary {{ $timeRange == '24h' ? 'active' : '' }}">24h</a>
+                                <a href="{{ route(Route::currentRouteName(), [Crypt::encryptString($customerSite->id), 'time_range' => '7d']) }}"
+                                    class="px-2 btn btn-outline-primary {{ $timeRange == '7d' ? 'active' : '' }}">7d</a>
+                                <a href="{{ route(Route::currentRouteName(), [Crypt::encryptString($customerSite->id), 'time_range' => '14d']) }}"
+                                    class="px-2 btn btn-outline-primary {{ $timeRange == '14d' ? 'active' : '' }}">14d</a>
+                                <a href="{{ route(Route::currentRouteName(), [Crypt::encryptString($customerSite->id), 'time_range' => '30d']) }}"
+                                    class="px-2 btn btn-outline-primary {{ $timeRange == '30d' ? 'active' : '' }}">30d</a>
+                                <a href="{{ route(Route::currentRouteName(), [Crypt::encryptString($customerSite->id), 'time_range' => '3Mo']) }}"
+                                    class="px-2 btn btn-outline-primary {{ $timeRange == '3Mo' ? 'active' : '' }}">3Mo</a>
+                                <a href="{{ route(Route::currentRouteName(), [Crypt::encryptString($customerSite->id), 'time_range' => '6Mo']) }}"
+                                    class="px-2 btn btn-outline-primary {{ $timeRange == '6Mo' ? 'active' : '' }}">6Mo</a>
                             </div>
                             <div class="float-end">
-                                <form method="GET" action="" class="row row-cols-lg-auto g-2 align-items-center">
-                                    {{-- {{ Form::open(['method' => 'get', 'class' => 'row row-cols-lg-auto g-2 align-items-center']) }} --}}
+                                <form method="GET" class="row row-cols-lg-auto g-2 align-items-center">
                                     <div class="col">
-                                        {{-- {{ Form::text('start_time', $startTime->format('Y-m-d H:i'), ['class' => 'date_time_select form-control', 'style' => 'width:150px']) }} --}}
+                                        <input type="text" name="start_time"
+                                            value="{{ $startTime->format('Y-m-d H:i') }}"
+                                            class="date_time_select form-control" id="start_time_picker"
+                                            style="width:150px">
                                     </div>
                                     <div class="col">
-                                        {{-- {{ Form::text('end_time', $endTime->format('Y-m-d H:i'), ['class' => 'date_time_select form-control', 'style' => 'width:150px']) }} --}}
+                                        <input type="text" name="end_time" value="{{ $endTime->format('Y-m-d H:i') }}"
+                                            class="date_time_select form-control" id="end_time_picker" style="width:150px">
                                     </div>
                                     <div class="col">
-                                        {{-- {{ Form::submit('View Report', ['class' => 'btn btn-info mr-1']) }} --}}
-                                        {{-- {{ link_to_route('customer_sites.show', __('app.reset'), $customerSite, ['class' => 'btn btn-secondary']) }} --}}
+                                        <button type="submit" class="btn btn-info mr-1">View Report</button>
                                     </div>
-                                    {{-- {{ Form::close() }} --}}
                                 </form>
                             </div>
+
+
                         </div>
-
-                        @auth
-                            <ul class="nav nav-tabs">
-                                <li class="nav-item">
-                                    {{ link_to_route('customer_sites.show', __('monitoring_log.graph'), [$customerSite->id] + request(['time_range', 'start_time', 'end_time']), ['class' => 'nav-link ' . (in_array(Request::segment(3), [null]) ? 'active' : '')]) }}
-                                </li>
-                                <li class="nav-item">
-                                    {{ link_to_route('customer_sites.timeline', __('monitoring_log.monitoring_log'), [$customerSite->id] + request(['time_range', 'start_time', 'end_time']), ['class' => 'nav-link ' . (in_array(Request::segment(3), ['timeline']) ? 'active' : '')]) }}
-                                </li>
-                            </ul>
-                        @else
-                            <ul class="nav nav-tabs">
-                                <li class="nav-item">
-                                    {{ link_to_route('customer_sites.public-show', __('monitoring_log.graph'), [$customerSite->id] + request(['time_range', 'start_time', 'end_time']), ['class' => 'nav-link ' . (in_array(Request::segment(4), [null]) ? 'active' : '')]) }}
-                                </li>
-                                <li class="nav-item">
-                                    {{ link_to_route('customer_sites.public-timeline', __('monitoring_log.monitoring_log'), [$customerSite->id] + request(['time_range', 'start_time', 'end_time']), ['class' => 'nav-link ' . (in_array(Request::segment(3), ['timeline']) ? 'active' : '')]) }}
-                                </li>
-                            </ul>
-                        @endauth
-
                         @yield('customer_site_content')
                     </div>
                 </div>
@@ -190,20 +173,17 @@
     </div>
     <!--end::Content wrapper-->
 @endsection
-
-@push('styles')
-    <link rel="stylesheet" href="{{ url('css/plugins/jquery.datetimepicker.css') }}">
-@endpush
-
-@push('scriptsdatapicker')
+@push('scripts')
     <script src="{{ url('js/jquery.min.js') }}"></script>
     <script src="{{ url('js/plugins/jquery.datetimepicker.js') }}"></script>
     <script>
-        $('.date_time_select').datetimepicker({
-            format: 'Y-m-d H:i',
-            closeOnTimeSelect: true,
-            scrollInput: false,
-            dayOfWeekStart: 1
+        $(document).ready(function() {
+            $('.date_time_select').datetimepicker({
+                format: 'Y-m-d H:i',
+                closeOnTimeSelect: true,
+                scrollInput: false,
+                dayOfWeekStart: 1
+            });
         });
     </script>
 @endpush
