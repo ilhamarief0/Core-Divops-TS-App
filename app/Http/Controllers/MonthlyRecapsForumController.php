@@ -3,13 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;  // Import Http client
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use Yajra\DataTables\Facades\DataTables;
-use Illuminate\Support\Facades\Cache; // For caching the JWT token
 
-class WeeklyRecapsForumController extends Controller
+class MonthlyRecapsForumController extends Controller
 {
-    // This method assumes you have a login route or a mechanism to get the JWT token
     private function getJwtToken()
     {
         // Check if the token is cached to avoid repeated login requests
@@ -56,33 +55,54 @@ class WeeklyRecapsForumController extends Controller
             if ($response->successful()) {
                 $data = $response->json(); // Decode JSON response into array
 
-                // Optionally apply filtering for minggu, bulan, and tahun
-                if ($request->has('minggu') && $request->minggu) {
-                    $data = array_filter($data, function ($item) use ($request) {
-                        return $item['minggu'] == $request->minggu;
-                    });
-                }
-                if ($request->has('bulan') && $request->bulan) {
-                    $data = array_filter($data, function ($item) use ($request) {
-                        return $item['bulan'] == $request->bulan;
-                    });
-                }
-                if ($request->has('tahun') && $request->tahun) {
-                    $data = array_filter($data, function ($item) use ($request) {
-                        return $item['tahun'] == $request->tahun;
-                    });
+                // Initialize an array to hold the filtered recap
+                $monthlyRecap = [];
+
+                // Retrieve the month and year from the request
+                $selectedMonth = $request->input('bulan');
+                $selectedYear = $request->input('tahun');
+
+                // Filter data by selected month and year
+                foreach ($data as $item) {
+                    if ($item['bulan'] == $selectedMonth && $item['tahun'] == $selectedYear) {
+                        $divisi = $item['divisi'];
+                        $totalPostingan = $item['total_postingan'];
+
+                        // If the division doesn't exist in the summary, initialize it
+                        if (!isset($monthlyRecap[$divisi])) {
+                            $monthlyRecap[$divisi] = [
+                                'divisi' => $divisi,
+                                'total_postingan' => 0, // Total posts for the division in the selected month
+                            ];
+                        }
+
+                        // Sum up total posts for the division in the month
+                        $monthlyRecap[$divisi]['total_postingan'] += $totalPostingan;
+                    }
                 }
 
-                // Return data to DataTable
-                return DataTables::of($data)
+                // Format the data to be displayed as a DataTable
+                $formattedData = [];
+                foreach ($monthlyRecap as $divRecap) {
+                    $formattedData[] = [
+                        'divisi' => $divRecap['divisi'],
+                        'total_postingan' => $divRecap['total_postingan'],
+                    ];
+                }
+
+                // Return formatted data to DataTable
+                return DataTables::of($formattedData)
                     ->addIndexColumn()
+                    ->addColumn('divisi', function ($row) {
+                        return '<span>' . $row['divisi'] . '</span>';
+                    })
                     ->addColumn('total_postingan', function ($row) {
                         return '
                             <div class="flex text-end">
                                 <span class="badge py-3 px-4 fs-7 badge-light-primary">' . $row['total_postingan'] . '</span>
                             </div>';
                     })
-                    ->rawColumns(['total_postingan'])
+                    ->rawColumns(['total_postingan', 'divisi'])
                     ->make(true);
             }
 
@@ -90,6 +110,6 @@ class WeeklyRecapsForumController extends Controller
             return response()->json(['error' => 'Error fetching data from Python API'], 500);
         }
 
-        return view('forumrecaps.weekly.index');
+        return view('forumrecaps.monthly.index');
     }
 }

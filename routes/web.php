@@ -6,6 +6,7 @@ use App\Http\Controllers\ClientMonitoringWebController;
 use App\Http\Controllers\ClientWebsiteMonitoringWebController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MonitoringWebController;
+use App\Http\Controllers\MonthlyRecapsForumController;
 use App\Http\Controllers\ServerDevResourceMonitoringController;
 use App\Http\Controllers\WeeklyRecapsForumController;
 use Illuminate\Support\Facades\DB;
@@ -53,6 +54,10 @@ Route::middleware('auth')->group(function () {
 
     Route::controller(WeeklyRecapsForumController::class)->group(function () {
         Route::get('/forum/weeklyrecaps', 'index')->name('weeklyrecaps.index');
+    });
+
+    Route::controller(MonthlyRecapsForumController::class)->group(function () {
+        Route::get('/forum/monthlyrecaps', 'index')->name('monthlyrecaps.index');
     });
 
     Route::controller(ServerDevResourceMonitoringController::class)->group(function () {
