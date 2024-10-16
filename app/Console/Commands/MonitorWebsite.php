@@ -31,9 +31,9 @@ class MonitorWebsite extends Command
                 MonitoringLog::create([
                     'website_id' => $website->id,
                     'url' => $website->url,
+                    'time' => Carbon::now()->setTimezone('Asia/Makassar'),
                     'response_time' => $responseTime,
                     'status_code' => $statusCode,
-                    'created_at' => Carbon::now()->setTimezone('Asia/Makassar'),
                 ]);
 
                 // Update the last check timestamp
@@ -83,14 +83,14 @@ class MonitorWebsite extends Command
         // Fetch the last 5 downtimes from the MonitoringLog
         $downtimeLogs = MonitoringLog::where('website_id', $website->id)
             ->where('status_code', '>=', 500) // Assuming 500+ indicates downtime
-            ->orderBy('created_at', 'desc')
+            ->orderBy('time', 'desc')
             ->take(5)
             ->get();
 
         // Format the downtime log message
         $downtimeMessage = '';
         foreach ($downtimeLogs as $log) {
-            $downtimeMessage .= "Code : {$log->status_code} | " . $log->created_at->format('H:i:s') . " | " . $log->response_time . " ms\n";
+            $downtimeMessage .= "Code : {$log->status_code} | " . $log->time->format('H:i:s') . " | " . $log->response_time . " ms\n";
         }
 
 
