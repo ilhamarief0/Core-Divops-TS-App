@@ -9,7 +9,7 @@ class MonitoringLog extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['website_id', 'url', 'status_code', 'response_time'];
+    protected $fillable = ['website_id', 'time', 'url', 'status_code', 'response_time'];
 
     public function customerSite()
     {
