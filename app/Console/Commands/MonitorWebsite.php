@@ -33,6 +33,7 @@ class MonitorWebsite extends Command
                     'url' => $website->url,
                     'response_time' => $responseTime,
                     'status_code' => $statusCode,
+                    'created_at' => Carbon::now(),
                 ]);
 
                 // Update the last check timestamp
