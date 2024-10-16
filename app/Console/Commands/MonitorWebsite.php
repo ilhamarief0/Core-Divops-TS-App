@@ -33,7 +33,7 @@ class MonitorWebsite extends Command
                     'url' => $website->url,
                     'response_time' => $responseTime,
                     'status_code' => $statusCode,
-                    'created_at' => Carbon::now(),
+                    'created_at' => Carbon::now()->setTimezone('Asia/Makassar'),
                 ]);
 
                 // Update the last check timestamp
