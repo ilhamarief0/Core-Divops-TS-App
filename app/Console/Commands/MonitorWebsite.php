@@ -90,7 +90,8 @@ class MonitorWebsite extends Command
         // Format the downtime log message
         $downtimeMessage = '';
         foreach ($downtimeLogs as $log) {
-            $downtimeMessage .= "Code : {$log->status_code} | " . $log->time->format('H:i:s') . " | " . $log->response_time . " ms\n";
+            $time = Carbon::parse($log->time); // Convert string to Carbon instance
+            $downtimeMessage .= "Code : {$log->status_code} | " . $time->format('H:i:s') . " | " . $log->response_time . " ms\n";
         }
 
 
