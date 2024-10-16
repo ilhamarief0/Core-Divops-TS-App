@@ -128,7 +128,7 @@
                 processing: true,
                 serverSide: true,
                 ajax: {
-                    url: "{{ route('monthlyrecaps.index') }}", // Replace with your actual route
+                    url: "{{ route('monthlyrecaps.index') }}",
                     data: function(d) {
                         d.bulan = $('#filter-bulan').val();
                         d.tahun = $('#filter-tahun').val();
@@ -137,40 +137,47 @@
                         var bulan = $('#filter-bulan').find(":selected").text();
                         var tahun = $('#filter-tahun').find(":selected").text();
 
-                        // Update card title and subtitle
+                        // Update title and subtitle
                         $('#card-title').text('Recap Bulanan');
-                        $('#card-subtitle').text('Bulan ' + bulan + ' ' + tahun);
+                        $('#card-subtitle').text(' Bulan ' + bulan + ' ' + tahun);
 
-                        return json.data; // Return the filtered data from the controller
+                        return json.data;
                     }
                 },
                 columns: [{
-                        data: 'divisi', // Division name
+                        data: 'divisi',
                         name: 'divisi'
                     },
                     {
-                        data: 'total_postingan', // Total posts for the division in the month
-                        name: 'total_postingan',
-                        render: function(data, type, row) {
-                            return `
-                   <div class="flex text-end">
-                                <span class="badge py-3 px-4 fs-7 badge-light-primary">${data}</span>
-                            </div>
-                `;
-                        }
+                        data: 'total_postingan',
+                        name: 'total_postingan'
                     }
                 ]
             });
 
-            // Event listener for the 'Tampilkan' button to refresh the table based on filter
             $('#filter-tampilkan').click(function() {
-                table.draw(); // Refresh DataTable with the new filter (bulan and tahun)
+                table.draw(); // Refresh DataTable dengan filter baru
             });
         });
-
-        // Set default current month and year
+    </script>
+    <script>
+        // Mendapatkan tanggal sekarang
         const today = new Date();
-        document.getElementById('filter-bulan').value = today.getMonth() + 1; // Months are 0-indexed
-        document.getElementById('filter-tahun').value = today.getFullYear();
+
+        // Menghitung minggu sekarang
+        const startOfYear = new Date(today.getFullYear(), 0, 1);
+        const diffDays = Math.floor((today - startOfYear) / (24 * 60 * 60 * 1000));
+
+        // Bulan sekarang (0 = Januari, jadi perlu +1)
+        const currentMonth = today.getMonth() + 1;
+
+        // Tahun sekarang   
+        const currentYear = today.getFullYear();
+
+        // Set nilai default bulan
+        document.getElementById('filter-bulan').value = currentMonth;
+
+        // Set nilai default tahun
+        document.getElementById('filter-tahun').value = currentYear;
     </script>
 @endpush

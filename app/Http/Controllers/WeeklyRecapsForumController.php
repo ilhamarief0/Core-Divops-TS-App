@@ -12,7 +12,6 @@ class WeeklyRecapsForumController extends Controller
     // This method assumes you have a login route or a mechanism to get the JWT token
     private function getJwtToken()
     {
-        // Check if the token is cached to avoid repeated login requests
         if (Cache::has('jwt_token')) {
             return Cache::get('jwt_token');
         }
