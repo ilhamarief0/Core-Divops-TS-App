@@ -6,6 +6,8 @@ use Illuminate\Console\Command;
 use App\Models\ClientWebsiteMonitoring;
 use App\Models\MonitoringLog; // Import the MonitoringLog model
 use GuzzleHttp\Client as HttpClient;
+use GuzzleHttp\Exception\RequestException; // Import Guzzle exception handler
+use GuzzleHttp\Exception\ConnectException;
 use Carbon\Carbon;
 
 class MonitorWebsite extends Command
@@ -33,7 +35,7 @@ class MonitorWebsite extends Command
                     'url' => $website->url,
                     'time' => Carbon::now()->setTimezone('Asia/Makassar'),
                     'response_time' => $responseTime,
-                    'status_code' => $statusCode,
+                    'status_code' => $statusCode, // Log the actual status code
                 ]);
 
                 // Update the last check timestamp
@@ -51,12 +53,22 @@ class MonitorWebsite extends Command
     protected function checkWebsite($url, &$statusCode)
     {
         try {
-            $client = new HttpClient();
+            $client = new HttpClient(['timeout' => 10]); // Set timeout to handle long requests
             $response = $client->get($url);
             $statusCode = $response->getStatusCode(); // Capture the status code
             return $statusCode === 200; // Website is up if status is 200
+        } catch (RequestException $e) {
+            if ($e->hasResponse()) {
+                $statusCode = $e->getResponse()->getStatusCode(); // Capture the real status code from the response
+            } else {
+                $statusCode = 500; // If there's no response, use a fallback status code
+            }
+            return false; // Website is down or has some issue
+        } catch (ConnectException $e) {
+            $statusCode = 408; // Timeout status code if there's a connection issue
+            return false; // Website is down due to timeout
         } catch (\Exception $e) {
-            $statusCode = 500; // Default to 500 if an error occurs
+            $statusCode = 500; // Default to 500 for other unexpected exceptions
             return false; // Website is down
         }
     }
@@ -82,7 +94,7 @@ class MonitorWebsite extends Command
 
         // Fetch the last 5 downtimes from the MonitoringLog
         $downtimeLogs = MonitoringLog::where('website_id', $website->id)
-            ->where('status_code', '>=', 500) // Assuming 500+ indicates downtime
+            ->where('status_code', '>=', 400) // Include all error status codes >= 400
             ->orderBy('time', 'desc')
             ->take(5)
             ->get();
@@ -90,10 +102,9 @@ class MonitorWebsite extends Command
         // Format the downtime log message
         $downtimeMessage = '';
         foreach ($downtimeLogs as $log) {
-            $time = Carbon::parse($log->time); // Convert string to Carbon instance
+            $time = Carbon::parse($log->time);
             $downtimeMessage .= "Code : {$log->status_code} | " . $time->format('H:i:s') . " | " . $log->response_time . " ms\n";
         }
-
 
         if (empty($downtimeMessage)) {
             $downtimeMessage = "No recent downtimes found.";
