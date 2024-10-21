@@ -11,6 +11,6 @@ jobs:
     - name: 📂 Sync files
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
-        server: 34.136.11.130
-        username: ftp-divops2
-        password: divops
+        server: 34.101.249.114
+        username: ftp-divops
+        password: pass1234
