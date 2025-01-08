@@ -67,7 +67,6 @@ class ClientWebsiteMonitoringWebController extends Controller
                              </i>
                          </button>
                    </a>
-
                      ';
 
                     $deleteBtn = '
@@ -80,7 +79,6 @@ class ClientWebsiteMonitoringWebController extends Controller
                          <span class="path5"></span>
                      </i>
                      </button>
-
                      ';
 
                     $layout = '

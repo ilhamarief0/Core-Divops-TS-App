@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 
 
+Route::redirect('/', '/login');
 
 Route::middleware('guest')->group(function () {
     Route::controller(AuthController::class)->group(function () {
