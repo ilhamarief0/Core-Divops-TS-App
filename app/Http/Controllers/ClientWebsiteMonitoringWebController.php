@@ -13,12 +13,18 @@ use Yajra\DataTables\Facades\DataTables;
 
 class ClientWebsiteMonitoringWebController extends Controller
 {
-    public function index(Request $request)
-    {
 
+    public function dataTable(Request $request)
+    {
         if ($request->ajax()) {
 
             $data = ClientWebsiteMonitoring::query();
+            $search = $request->input('search');
+
+            if ($search) {
+                $data->where('name', 'like', "%{$search}%")
+                    ->orWhere('url', 'like', "%{$search}%");
+            }
 
             return DataTables::of($data)
                 ->addIndexColumn()
@@ -46,65 +52,41 @@ class ClientWebsiteMonitoringWebController extends Controller
                 ->addColumn('notify_user_interval', function ($row) {
                     return '<span class="badge badge-light-primary">' . $row->notify_user_interval . ' Menit</span>';
                 })
-                // ->addColumn('action', function ($row) {
 
-                //     $btn = '<a href="javascript:void(0)" class="edit btn btn-primary btn-sm">View</a>';
-
-                //     return $btn;
-                // })
-
-
-                ->addColumn('action', function ($row) {
-                    $editBtn = '
-                    <a href="javascript:void(0)" data-id="' . $row->id . '" data-bs-toggle="modal" data-bs-target="#kt_modal_edit_website">
-                         <button class="btn btn-icon btn-active-light-primary w-30px h-30px me-3">
-                             <i class="ki-duotone ki-setting-3 fs-3">
-                                 <span class="path1"></span>
-                                 <span class="path2"></span>
-                                 <span class="path3"></span>
-                                 <span class="path4"></span>
-                                 <span class="path5"></span>
-                             </i>
-                         </button>
-                   </a>
-                     ';
-
-                    $deleteBtn = '
-                     <button class="btn btn-icon btn-active-light-primary w-30px h-30px delete-customer" data-id="' . $row->id . '" data-name="' . $row->name . '">
-                     <i class="ki-duotone ki-trash fs-3">
-                         <span class="path1"></span>
-                         <span class="path2"></span>
-                         <span class="path3"></span>
-                         <span class="path4"></span>
-                         <span class="path5"></span>
-                     </i>
-                     </button>
-                     ';
-
-                    $layout = '
-                    <div class="flex text-end">
-                    ' . $editBtn . $deleteBtn . '
-                    </div>';
-
-
-                    return $layout;
-                })
-                ->rawColumns(['name', 'url', 'action', 'is_active', 'notify_user_interval', 'client', 'type'])
+                ->rawColumns(['name', 'url', 'is_active', 'notify_user_interval', 'client', 'type'])
                 ->make(true);
         }
+    }
 
+    public function index()
+    {
         $client = ClientMonitoring::get();
         $websitetype = WebsiteMonitoringType::get();
 
         return view('monitoringweb.website.list', compact('client', 'websitetype'));
     }
 
+    public function bulkDelete(Request $request)
+    {
+        $ids = $request->ids;
+
+        DB::beginTransaction();
+
+        try {
+            ClientMonitoring::whereIn('id', $ids)->delete();
+
+            DB::commit();
+
+            return response()->json(['message' => 'Selected records have been deleted successfully.']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json(['error' => 'An error occurred: ' . $e->getMessage()], 500);
+        }
+    }
 
     public function store(Request $request)
     {
-
-        // dd($request->all());
-
         $validatedData = $request->validate([
             'name' => 'required|max:60',
             'url' => 'required|max:255',

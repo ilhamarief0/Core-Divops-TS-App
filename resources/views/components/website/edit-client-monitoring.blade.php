@@ -110,8 +110,6 @@
                         </div>
                     </div>
                     <!--end::Input group-->
-
-
                     </div>
                     <div class="text-center pt-10">
                         <button type="reset" class="btn btn-light me-3" data-kt-reseteditcustomer-modal-action="cancel">Discard</button>

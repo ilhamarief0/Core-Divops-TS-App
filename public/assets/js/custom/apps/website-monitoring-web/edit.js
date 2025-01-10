@@ -91,7 +91,7 @@ $(document).ready(function () {
                             if (result.isConfirmed) {
                                 form.reset();
                                 $("#kt_modal_edit_website").modal("hide");
-                                $(".data-tablewebsiteview")
+                                $(".data-tablewebsitemonitoring")
                                     .DataTable()
                                     .ajax.reload();
                             }

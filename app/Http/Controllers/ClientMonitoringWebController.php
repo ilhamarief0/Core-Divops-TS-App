@@ -9,9 +9,9 @@ use Yajra\DataTables\Facades\DataTables;
 
 class ClientMonitoringWebController extends Controller
 {
-    public function index(Request $request)
-    {
 
+    public function dataTable(Request $request)
+    {
         if ($request->ajax()) {
 
             $data = ClientMonitoring::query();
@@ -70,6 +70,10 @@ class ClientMonitoringWebController extends Controller
                 ->rawColumns(['name', 'bot_token', 'action', 'chat_id'])
                 ->make(true);
         }
+    }
+
+    public function index()
+    {
         return view('monitoringweb.client.list');
     }
 

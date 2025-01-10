@@ -47,7 +47,7 @@ var KTUsersAddUser = (function () {
                             if (result.isConfirmed) {
                                 form.reset();
                                 modal.hide();
-                                $(".data-tablewebsiteview")
+                                $(".data-tablewebsitemonitoring")
                                     .DataTable()
                                     .ajax.reload();
                             }

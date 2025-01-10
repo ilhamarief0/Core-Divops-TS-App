@@ -36,6 +36,7 @@ Route::middleware('auth')->group(function () {
 
     Route::controller(ClientMonitoringWebController::class)->group(function () {
         Route::get('/monitoringweb/client', 'index')->name('clientmonitoringweb.index');
+        Route::get('/monitoringweb/client/dataTable', 'dataTable')->name('clientmonitoringweb.datatable');
         Route::post('/monitoringweb/client/store', 'store')->name('clientmonitoringweb.store');
         Route::delete('/monitoringweb/client/delete/{id}', 'delete')->name('clientmonitoringweb.delete');
         Route::get('/monitoringweb/client/getData/{id}', 'getData')->name('clientmonitoringweb.getdata');
@@ -44,6 +45,8 @@ Route::middleware('auth')->group(function () {
 
     Route::controller(ClientWebsiteMonitoringWebController::class)->group(function () {
         Route::get('/monitoringweb/website', 'index')->name('clientwebsitemonitoring.index');
+        Route::get('/monitoringweb/website/dataTable', 'dataTable')->name('clientwebsitemonitoring.datatable');
+        Route::post('/monitoringweb/website/bulk-delete', 'bulkDelete')->name('clientwebsitemonitoring.bulk-delete');
         Route::post('/monitoringweb/website/store', 'store')->name('clientwebsitemonitoring.store');
         Route::delete('/monitoringweb/website/delete/{id}', 'delete')->name('clientwebsitemonitroing.delete');
         Route::get('/monitoringweb/website/getData/{id}', 'getData')->name('clientwebsitemonitoring.getdata');
