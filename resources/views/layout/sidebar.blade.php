@@ -5,11 +5,8 @@
     <!--begin::Logo-->
     <div class="app-sidebar-logo px-6" id="kt_app_sidebar_logo">
         <!--begin::Logo image-->
-        <a href="index.html">
-            <img alt="Logo" src="{{ asset('assets/media/logos/default-dark.svg') }}"
-                class="h-25px app-sidebar-logo-default" />
-            <img alt="Logo" src="{{ asset('assets/media/logos/default-small.svg') }}"
-                class="h-20px app-sidebar-logo-minimize" />
+        <a href="#" style="font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 25px; color: white;text-decoration: none;">
+            Div. Operation TS
         </a>
         <!--end::Logo image-->
         <!--begin::Sidebar toggle-->

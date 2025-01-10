@@ -19,9 +19,10 @@ class DatabaseSeeder extends Seeder
         $this->call(WebsiteMonitoringType::class);
 
         User::factory()->create([
-            'name' => 'Administrator',
+            'name' => 'Administrator Div Ops',
+            'username' => 'admindivops',
             'email' => 'admin@gmail.com',
-            'password' => Hash::make('pass1234'),
+            'password' => Hash::make('@9UpT4#ts'),
         ]);
     }
 }

@@ -18,7 +18,7 @@ class AuthController extends Controller
     {
 
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
+            'username' => 'required',
             'password' => 'required|min:6',
         ]);
 
@@ -29,7 +29,7 @@ class AuthController extends Controller
             ]);
         }
 
-        if (Auth::attempt($request->only('email', 'password'))) {
+        if (Auth::attempt($request->only('username', 'password'))) {
             $request->session()->regenerate();
             return response()->json([
                 'success' => true,
@@ -38,7 +38,7 @@ class AuthController extends Controller
         } else {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid email or password.',
+                'message' => 'Invalid username or password.',
             ]);
         }
 

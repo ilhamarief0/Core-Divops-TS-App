@@ -71,7 +71,7 @@ $(document).ready(function () {
                             if (result.isConfirmed) {
                                 form.reset();
                                 $("#kt_modal_edit_client").modal("hide");
-                                $(".data-tableclientview")
+                                $(".data-tableclient")
                                     .DataTable()
                                     .ajax.reload();
                             }

@@ -10,15 +10,10 @@
 
                 validator = FormValidation.formValidation(form, {
                     fields: {
-                        email: {
+                        username: {
                             validators: {
-                                regexp: {
-                                    regexp: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                                    message:
-                                        "The value is not a valid email address",
-                                },
                                 notEmpty: {
-                                    message: "Email address is required",
+                                    message: "The username is required",
                                 },
                             },
                         },

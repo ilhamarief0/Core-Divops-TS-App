@@ -73,7 +73,7 @@ class ClientWebsiteMonitoringWebController extends Controller
         DB::beginTransaction();
 
         try {
-            ClientMonitoring::whereIn('id', $ids)->delete();
+            ClientWebsiteMonitoring::whereIn('id', $ids)->delete();
 
             DB::commit();
 

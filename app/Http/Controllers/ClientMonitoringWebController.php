@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ClientMonitoring;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
 
 class ClientMonitoringWebController extends Controller
@@ -15,6 +16,14 @@ class ClientMonitoringWebController extends Controller
         if ($request->ajax()) {
 
             $data = ClientMonitoring::query();
+
+            $search = $request->input('search');
+
+            if ($search) {
+                $data->where('name', 'like', "%{$search}%")
+                    ->orWhere('bot_token', 'like', "%{$search}%")
+                    ->orWhere('chat_id', 'like', "%{$search}%");
+            }
 
             return DataTables::of($data)
                 ->addIndexColumn()
@@ -77,6 +86,24 @@ class ClientMonitoringWebController extends Controller
         return view('monitoringweb.client.list');
     }
 
+    public function bulkDelete(Request $request)
+    {
+        $ids = $request->ids;
+
+        DB::beginTransaction();
+
+        try {
+            ClientMonitoring::whereIn('id', $ids)->delete();
+
+            DB::commit();
+
+            return response()->json(['message' => 'Selected records have been deleted successfully.']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json(['error' => 'An error occurred: ' . $e->getMessage()], 500);
+        }
+    }
 
     public function store(Request $request)
     {

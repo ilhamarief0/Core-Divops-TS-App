@@ -16,8 +16,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('url');
             $table->boolean('is_active')->default(true);
-            $table->foreignId('client_monitoring_id')->constrained('client_monitorings')->onDelete('cascade');
-            $table->foreignId('website_monitoring_type_id')->constrained('website_monitoring_types')->onDelete('cascade');
+            $table->foreignId('client_monitoring_id')->constrained('client_monitorings');
+            $table->foreignId('website_monitoring_type_id')->constrained('website_monitoring_types');
             $table->integer('warning_threshold')->default(5000);
             $table->integer('down_threshold')->default(10000);
             $table->integer('notify_user_interval')->default(5);
