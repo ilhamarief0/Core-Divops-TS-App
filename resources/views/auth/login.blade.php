@@ -53,7 +53,7 @@
 									<h1 class="text-gray-900 fw-bolder mb-3">Login Div Operation TS Apps</h1>
 									<!--end::Title-->
 									<!--begin::Subtitle-->
-									<div class="text-gray-500 fw-semibold fs-6">Your Social Campaigns</div>
+									<div class="text-gray-500 fw-semibold fs-6">Login Menggunakan username dan password</div>
 									<!--end::Subtitle=-->
 								</div>
 								<!--begin::Heading-->

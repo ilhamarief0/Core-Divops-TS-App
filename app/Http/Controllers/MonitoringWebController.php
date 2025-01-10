@@ -17,7 +17,7 @@ class MonitoringWebController extends Controller
         $customerSiteQuery->where('name', 'like', '%' . $request->get('q') . '%');
         $customerSiteQuery->orderBy('client_monitoring_id');
         $customerSiteQuery->orderBy('name');
-        $customerSiteQuery->where('owner_id', auth()->id());
+
 
         // Filter berdasarkan client_monitoring_id
         if ($vendorId = $request->get('client_monitoring_id')) {
