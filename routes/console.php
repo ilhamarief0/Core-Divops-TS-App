@@ -9,7 +9,7 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote')->hourly();
 
 Schedule::command('app:monitor-website')->everyMinute();
-
+Schedule::command('app:check-server-status')->everyMinute();
 // Schedule::command('notify-user')->everyMinute();
 
 Schedule::command('update:weekly-forum-stats')->fridays()->at('08:00');

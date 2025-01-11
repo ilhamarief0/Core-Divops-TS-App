@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClientMonitoringWebController;
 use App\Http\Controllers\ClientWebsiteMonitoringWebController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\MonitoringServerController;
 use App\Http\Controllers\MonitoringWebController;
 use App\Http\Controllers\MonthlyRecapsForumController;
 use App\Http\Controllers\ServerDevResourceMonitoringController;
@@ -15,6 +16,13 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::redirect('/', '/login');
+
+Route::controller(MonitoringServerController::class)->group(function(){
+
+    Route::get('/statusserver', 'indexstatusserver')->name('dashboard.monitoringserver');
+    Route::get('/check-servers', 'checkServers')->name('check-servers.monitoringserver');
+
+});
 
 Route::middleware('guest')->group(function () {
     Route::controller(AuthController::class)->group(function () {
