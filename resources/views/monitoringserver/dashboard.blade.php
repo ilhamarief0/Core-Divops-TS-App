@@ -45,7 +45,7 @@
         @foreach ($servers as $server)
         <div class="card mb-3">
             <div class="card-header">
-                <strong>{{ $server->name }}</strong> - {{ $server->ip_address }}:{{ $server->port }}
+                <strong>{{ $server->name }}</strong> - Port : {{ $server->port }}
             </div>
             <div class="card-body">
                 <div class="status-bar mt-3">
