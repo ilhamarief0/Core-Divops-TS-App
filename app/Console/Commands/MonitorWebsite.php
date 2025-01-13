@@ -117,14 +117,13 @@ namespace App\Console\Commands;
                 504 => 'Gateway Timeout',
             ];
 
-            // Format the downtime log message
             $downtimeMessage = '';
             foreach ($groupedDowntimeLogs as $date => $logs) {
                 $downtimeMessage .= "Tanggal: {$date}\n";
                 foreach ($logs as $log) {
-                    $time = Carbon::parse($log->time);
+                    $time = Carbon::parse($log->time)->format('H:i:s'); // Format waktu sebenarnya
                     $description = $statusDescriptions[$log->status_code] ?? 'Unknown Error'; // Default to 'Unknown Error' if status code is not in the list
-                    $downtimeMessage .= "  - Code: {$log->status_code} ({$description}) | " . $time->format('H:i:s') . " |  " . $log->response_time . " ms\n";
+                    $downtimeMessage .= "  - Code: {$log->status_code} ({$description}) | {$time} | {$log->response_time} ms\n";
                 }
             }
 
@@ -156,6 +155,7 @@ namespace App\Console\Commands;
                 $this->error("Failed to send notification: {$e->getMessage()}");
             }
         }
+
 
 
         protected function shouldNotify($website)
