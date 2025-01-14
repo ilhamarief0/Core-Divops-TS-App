@@ -1,16 +1,82 @@
-on: push
 name: 🚀 Deploy website on push
+
+on:
+  push:
+    branches:
+      - main
+
 jobs:
+  dusk-tests:
+    name: Run Tests
+    runs-on: macos-latest
+    steps:
+      # 1. Checkout Repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Setup PHP Environment
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, bcmath, openssl, pdo_mysql
+          coverage: none
+
+      # 3. Install Dependencies
+      - name: Install dependencies
+        run: composer install --no-progress --no-suggest --prefer-dist --optimize-autoloader
+
+      # 4. Setup Database
+      - name: Setup database
+        run: |
+          brew services start mysql
+          mysql -e 'CREATE DATABASE laravel_test;'
+
+      # 5. Create .env file
+      - name: Create .env file
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      # 6. Install Chrome and ChromeDriver
+      - name: Install Google Chrome
+        run: brew install --cask google-chrome
+
+      - name: Install ChromeDriver
+        run: php artisan dusk:chrome-driver --detect
+
+      # 7. Run Migrations
+      - name: Run migrations
+        run: php artisan migrate --force
+
+      # 8. Run Laravel Dusk Tests
+      - name: Run Laravel Dusk Tests
+        env:
+          APP_URL: http://127.0.0.1:8000
+        run: php artisan serve & sleep 5 && php artisan dusk
+
+      # 9. Upload Screenshots on Failure
+      - name: Upload screenshots
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: dusk-screenshots
+          path: tests/Browser/screenshots
+
   web-deploy:
     name: 🎉 Deploy
     runs-on: ubuntu-latest
+    needs: dusk-tests
+    if: success() # Hanya jalankan jika 'dusk-tests' berhasil
     steps:
-    - name: 🚚 Get latest code
-      uses: actions/checkout@v4
-    
-    - name: 📂 Sync files
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-      with:
-        server: 34.136.11.130
-        username: ftp-divops2
-        password: divops
+      # 1. Checkout Repository
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v4
+
+      # 2. Deploy Files via FTP
+      - name: 📂 Sync files
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: 34.136.11.130
+          username: ftp-divops2
+          password: divops
