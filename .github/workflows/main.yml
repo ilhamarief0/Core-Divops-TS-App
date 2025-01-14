@@ -58,7 +58,7 @@ jobs:
 
       # 9. Run Migrations
       - name: Run migrations
-        run: php artisan migrate --force
+        run: php artisan migrate:fresh --seed
 
       # 10. Run Laravel Dusk Tests
       - name: Run Laravel Dusk Tests
