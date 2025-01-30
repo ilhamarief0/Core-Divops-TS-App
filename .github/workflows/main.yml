@@ -26,36 +26,47 @@ jobs:
       - name: Install dependencies
         run: composer install --no-progress --no-suggest --prefer-dist --optimize-autoloader
 
-      # 4. Setup Database
+      # 4. Install MySQL
+      - name: Install MySQL
+        run: |
+          brew update
+          brew install mysql
+          brew services restart mysql
+          sleep 10 # Berikan waktu untuk MySQL agar bisa sepenuhnya berjalan
+
+      # 5. Verify MySQL is Running
+      - name: Verify MySQL
+        run: mysqladmin ping
+
+      # 6. Setup Database
       - name: Setup database
         run: |
-          brew services start mysql
           mysql -e 'CREATE DATABASE laravel_test;'
 
-      # 5. Create .env file
+      # 7. Create .env file
       - name: Create .env file
         run: |
           cp .env.example .env
           php artisan key:generate
 
-      # 6. Install Chrome and ChromeDriver
+      # 8. Install Chrome and ChromeDriver
       - name: Install Google Chrome
         run: brew install --cask google-chrome
 
       - name: Install ChromeDriver
         run: php artisan dusk:chrome-driver --detect
 
-      # 7. Run Migrations
+      # 9. Run Migrations
       - name: Run migrations
-        run: php artisan migrate --force
+        run: php artisan migrate:fresh --seed
 
-      # 8. Run Laravel Dusk Tests
+      # 10. Run Laravel Dusk Tests
       - name: Run Laravel Dusk Tests
         env:
           APP_URL: http://127.0.0.1:8000
         run: php artisan serve & sleep 5 && php artisan dusk
 
-      # 9. Upload Screenshots on Failure
+      # 11. Upload Screenshots on Failure
       - name: Upload screenshots
         if: failure()
         uses: actions/upload-artifact@v3
