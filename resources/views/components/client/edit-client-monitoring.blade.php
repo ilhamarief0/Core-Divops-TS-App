@@ -36,9 +36,18 @@
                             <label class="fs-6 fw-semibold form-label mb-2"><span class="required">Chat Id</span></label>
                             <input type="text" class="form-control form-control-solid" id="chat_id" name="chat_id" placeholder="Masukan Chat Id Anda" />
                         </div>
-
-
+                           <!--begin::Input group-->
+                        <div class="fv-row mb-7">
+                            <label class="required fs-6 fw-semibold form-label mb-2">Active?</label>
+                            <div class="form-check form-check-solid form-switch form-check-custom fv-row">
+                                <input class="form-check-input w-45px h-30px" type="checkbox" id="is_active" name="is_active" />
+                                <label class="form-check-label" for="is_active"></label>
+                            </div>
+                        </div>
+                    <!--end::Input group-->
                     </div>
+
+
                     <div class="text-center pt-10">
                         <button type="reset" class="btn btn-light me-3" data-kt-reseteditcustomer-modal-action="cancel">Discard</button>
                         <button type="submit" class="btn btn-primary" data-kt-editclient-modal-action="submit">

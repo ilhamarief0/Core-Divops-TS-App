@@ -140,7 +140,10 @@ class ClientWebsiteMonitoringWebController extends Controller
         // Update the customer site with validated data
         $id->update($validatedData);
 
-        return response()->json(['message' => 'Client Updated successfully'], 200);
+        return response()->json([
+            'message' => 'Client updated successfully',
+            'data' => $id // Opsional: kembalikan data yang telah diupdate
+        ], 200);
     }
 
     private function getStartTimeByTimeRange(string $timeRange): Carbon

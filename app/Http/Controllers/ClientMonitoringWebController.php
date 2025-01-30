@@ -31,6 +31,13 @@ class ClientMonitoringWebController extends Controller
                 ->addColumn('name', function ($row) {
                     return '<a class="text-gray-800 text-hover-primary mb-12">' . $row->name . '</a>';
                 })
+                ->addColumn('is_active', function ($row) {
+                    if ($row->is_active == 1) {
+                        return '<span class="badge badge-light-success">Active</span>';
+                    } else {
+                        return '<span class="badge badge-light-secondary">Inactive</span>';
+                    }
+                })
                 ->addColumn('bot_token', function ($row) {
                     return '<span class="badge badge-light-secondary">' . $row->bot_token . '</span>';
                 })
@@ -76,7 +83,7 @@ class ClientMonitoringWebController extends Controller
 
                     return $layout;
                 })
-                ->rawColumns(['name', 'bot_token', 'action', 'chat_id'])
+                ->rawColumns(['name', 'is_active','bot_token', 'action', 'chat_id'])
                 ->make(true);
         }
     }
@@ -148,19 +155,25 @@ class ClientMonitoringWebController extends Controller
 
     public function update(Request $request, ClientMonitoring $id)
     {
-
         // Validate incoming data
         $validatedData = $request->validate([
-            'name' => 'required',
-            'description' => 'required',
-            'bot_token' => 'required',
-            'chat_id' => 'required',
+            'name' => 'required|string|max:255', // Tambahkan validasi untuk string dan max length
+            'description' => 'nullable|string', // Deskripsi opsional dan harus string
+            'bot_token' => 'required|string', // Bot token wajib dan harus string
+            'chat_id' => 'required|string', // Chat ID wajib dan harus string
         ]);
 
+        // Handle is_active
+        $validatedData['is_active'] = $request->has('is_active') ? 1 : 0;
 
-        // Update the customer site with validated data
+        // dd($validatedData);
+
         $id->update($validatedData);
 
-        return response()->json(['message' => 'Client Updated successfully'], 200);
+        // Return success response
+        return response()->json([
+            'message' => 'Client updated successfully',
+            'data' => $id
+        ], 200);
     }
 }

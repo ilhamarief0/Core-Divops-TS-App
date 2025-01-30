@@ -12,6 +12,11 @@ $(document).ready(function () {
                 if (response && response.data) {
                     $("#id").val(response.data.id);
                     $("#name").val(response.data.name);
+                    if (response.data.is_active == 1) {
+                        $("#is_active").prop("checked", true);
+                    } else {
+                        $("#is_active").prop("checked", false);
+                    }
                     $("#description").val(response.data.description);
                     $("#bot_token").val(response.data.bot_token);
                     $("#chat_id").val(response.data.chat_id);
@@ -50,7 +55,7 @@ $(document).ready(function () {
                 $.ajax({
                     type: "POST",
                     url: `/monitoringweb/client/update/${clientId}`,
-                    data: $(form).serialize(),
+                    data: $(form).serialize(),// Convert array to URL-encoded string
                     headers: {
                         "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr(
                             "content"
@@ -71,9 +76,7 @@ $(document).ready(function () {
                             if (result.isConfirmed) {
                                 form.reset();
                                 $("#kt_modal_edit_client").modal("hide");
-                                $(".data-tableclient")
-                                    .DataTable()
-                                    .ajax.reload();
+                                location.reload();
                             }
                         });
                     },
@@ -141,6 +144,7 @@ $(document).ready(function () {
             $("#kt_modal_edit_client").modal("hide");
         });
     });
+
     const resetatasButton = document.querySelector(
         '[data-kt-resetataseditcustomer-modal-action="cancel"]'
     );

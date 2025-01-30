@@ -2,13 +2,15 @@
 
 namespace App\Console\Commands;
 
-    use Illuminate\Console\Command;
+use App\Models\ClientMonitoring;
+use Illuminate\Console\Command;
     use App\Models\ClientWebsiteMonitoring;
     use App\Models\MonitoringLog; // Import the MonitoringLog model
     use GuzzleHttp\Client as HttpClient;
     use GuzzleHttp\Exception\RequestException; // Import Guzzle exception handler
     use GuzzleHttp\Exception\ConnectException;
     use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
     class MonitorWebsite extends Command
     {
@@ -17,38 +19,47 @@ namespace App\Console\Commands;
 
         public function handle()
         {
-            // Fetch all websites to monitor
-            $websites = ClientWebsiteMonitoring::where('is_active', true)->get();
+            // Ambil semua ClientMonitoring yang aktif
+            $clients = ClientMonitoring::where('is_active', true)
+                ->with(['websites' => function ($query) {
+                    $query->where('is_active', true);
+                }])
+                ->get();
 
-            foreach ($websites as $website) {
-                // Check if the website needs to be checked
-                if ($website->needToCheck()) {
-                    // Perform the website check and capture response time and status code
-                    $start = microtime(true);
-                    $response = $this->checkWebsite($website->url, $statusCode);
-                    $end = microtime(true);
-                    $responseTime = round(($end - $start) * 1000);
+            if ($clients->isEmpty()) {
+                Log::info('No active clients with active websites found.');
+                return;
+            }
 
-                    // Log the monitoring result
-                    MonitoringLog::create([
-                        'website_id' => $website->id,
-                        'url' => $website->url,
-                        'time' => Carbon::now()->setTimezone('Asia/Makassar'),
-                        'response_time' => $responseTime,
-                        'status_code' => $statusCode, // Log the actual status code
-                    ]);
+            foreach ($clients as $client) {
+                foreach ($client->websites ?? collect() as $website) { // Sesuaikan dengan websites()
+                    if ($website->needToCheck()) {
+                        $start = microtime(true);
+                        $response = $this->checkWebsite($website->url, $statusCode);
+                        $end = microtime(true);
+                        $responseTime = round(($end - $start) * 1000);
 
-                    // Update the last check timestamp
-                    $website->last_check_at = Carbon::now();
-                    $website->save();
+                        MonitoringLog::create([
+                            'website_id' => $website->id,
+                            'url' => $website->url,
+                            'time' => Carbon::now()->setTimezone('Asia/Makassar'),
+                            'response_time' => $responseTime,
+                            'status_code' => $statusCode,
+                        ]);
 
-                    if (!$response) {
-                        // Log the error and send a notification if the website is down
-                        $this->sendNotification($website);
+                        $website->last_check_at = Carbon::now();
+                        $website->save();
+
+                        if (!$response) {
+                            $this->sendNotification($website);
+                        }
                     }
                 }
             }
         }
+
+
+
 
         protected function checkWebsite($url, &$statusCode)
         {

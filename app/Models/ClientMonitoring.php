@@ -9,10 +9,10 @@ class ClientMonitoring extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'description', 'bot_token', 'chat_id', 'creator_id'];
+    protected $fillable = ['name', 'is_active', 'description', 'bot_token', 'chat_id', 'creator_id'];
 
 
-    public function website()
+    public function websites()
     {
         return $this->hasMany(ClientWebsiteMonitoring::class, 'client_monitoring_id');
     }

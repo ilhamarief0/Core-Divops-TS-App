@@ -25,6 +25,7 @@ $(function () {
                 searchable: false
             },
             { data: 'name' },
+            { data: 'is_active' },
             { data: 'bot_token' },
             { data: 'chat_id' },
             {

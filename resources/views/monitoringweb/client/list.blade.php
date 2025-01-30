@@ -42,6 +42,7 @@
                                         </div>
                                     </th>
                                     <th class="min-w-150px">Nama Client</th>
+                                    <th class="min-w-150px">Active Status</th>
                                     <th class="min-w-150px">Bot Token</th>
                                     <th class="min-w-150px">Chat Id</th>
                                     <th class="text-epnd min-w-100px">Actions</th>
