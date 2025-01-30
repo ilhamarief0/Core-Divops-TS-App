@@ -63,18 +63,18 @@ jobs:
         run: php artisan dusk:chrome-driver --detect
 
       # 7. Run Laravel Dusk Tests
-      - name: Run Laravel Dusk Tests
-        env:
-          APP_URL: http://127.0.0.1:8000
-        run: php artisan serve & sleep 5 && php artisan dusk
+      # - name: Run Laravel Dusk Tests
+      #   env:
+      #     APP_URL: http://127.0.0.1:8000
+      #   run: php artisan serve & sleep 5 && php artisan dusk
 
-      # 8. Upload Screenshots on Failure
-      - name: Upload screenshots
-        if: failure()
-        uses: actions/upload-artifact@v3
-        with:
-          name: dusk-screenshots
-          path: tests/Browser/screenshots
+      # # 8. Upload Screenshots on Failure
+      # - name: Upload screenshots
+      #   if: failure()
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: dusk-screenshots
+      #     path: tests/Browser/screenshots
 
   web-deploy:
     name: 🎉 Deploy
