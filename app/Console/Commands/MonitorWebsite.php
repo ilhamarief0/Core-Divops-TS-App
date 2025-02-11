@@ -4,177 +4,164 @@ namespace App\Console\Commands;
 
 use App\Models\ClientMonitoring;
 use Illuminate\Console\Command;
-    use App\Models\ClientWebsiteMonitoring;
-    use App\Models\MonitoringLog; // Import the MonitoringLog model
-    use GuzzleHttp\Client as HttpClient;
-    use GuzzleHttp\Exception\RequestException; // Import Guzzle exception handler
-    use GuzzleHttp\Exception\ConnectException;
-    use Carbon\Carbon;
+use App\Models\ClientWebsiteMonitoring;
+use App\Models\MonitoringLog;
+use GuzzleHttp\Client as HttpClient;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\ConnectException;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
-    class MonitorWebsite extends Command
+class MonitorWebsite extends Command
+{
+    protected $signature = 'app:monitor-website';
+    protected $description = 'Monitor websites and send notifications if they are down';
+
+    public function handle()
     {
-        protected $signature = 'app:monitor-website';
-        protected $description = 'Monitor websites and send notifications if they are down';
+        $clients = ClientMonitoring::where('is_active', true)
+            ->with(['websites' => function ($query) {
+                $query->where('is_active', true);
+            }])
+            ->get();
 
-        public function handle()
-        {
-            // Ambil semua ClientMonitoring yang aktif
-            $clients = ClientMonitoring::where('is_active', true)
-                ->with(['websites' => function ($query) {
-                    $query->where('is_active', true);
-                }])
-                ->get();
+        if ($clients->isEmpty()) {
+            Log::info('No active clients with active websites found.');
+            return;
+        }
 
-            if ($clients->isEmpty()) {
-                Log::info('No active clients with active websites found.');
-                return;
-            }
+        $httpClient = new HttpClient(['timeout' => 10]);
 
-            foreach ($clients as $client) {
-                foreach ($client->websites ?? collect() as $website) { // Sesuaikan dengan websites()
-                    if ($website->needToCheck()) {
-                        $start = microtime(true);
-                        $response = $this->checkWebsite($website->url, $statusCode);
-                        $end = microtime(true);
-                        $responseTime = round(($end - $start) * 1000);
-
-                        MonitoringLog::create([
-                            'website_id' => $website->id,
-                            'url' => $website->url,
-                            'time' => Carbon::now()->setTimezone('Asia/Makassar'),
-                            'response_time' => $responseTime,
-                            'status_code' => $statusCode,
-                        ]);
-
-                        $website->last_check_at = Carbon::now();
-                        $website->save();
-
-                        if (!$response) {
-                            $this->sendNotification($website);
-                        }
-                    }
+        foreach ($clients as $client) {
+            foreach ($client->websites ?? [] as $website) {
+                if ($website->needToCheck()) {
+                    $this->checkAndLogWebsite($httpClient, $website);
                 }
             }
         }
+    }
 
+    protected function checkAndLogWebsite($httpClient, $website)
+    {
+        $start = microtime(true);
+        $response = $this->checkWebsite($httpClient, $website->url, $statusCode);
+        $responseTime = round((microtime(true) - $start) * 1000);
 
+        MonitoringLog::create([
+            'website_id' => $website->id,
+            'url' => $website->url,
+            'time' => Carbon::now()->setTimezone('Asia/Makassar'),
+            'response_time' => $responseTime,
+            'status_code' => $statusCode,
+        ]);
 
+        $website->last_check_at = Carbon::now();
+        $website->save();
 
-        protected function checkWebsite($url, &$statusCode)
-        {
-            try {
-                $client = new HttpClient(['timeout' => 10]); // Set timeout to handle long requests
-                $response = $client->get($url);
-                $statusCode = $response->getStatusCode(); // Capture the status code
-                return $statusCode === 200; // Website is up if status is 200
-            } catch (RequestException $e) {
-                if ($e->hasResponse()) {
-                    $statusCode = $e->getResponse()->getStatusCode(); // Capture the real status code from the response
-                } else {
-                    $statusCode = 500; // If there's no response, use a fallback status code
-                }
-                return false; // Website is down or has some issue
-            } catch (ConnectException $e) {
-                $statusCode = 408; // Timeout status code if there's a connection issue
-                return false; // Website is down due to timeout
-            } catch (\Exception $e) {
-                $statusCode = 500; // Default to 500 for other unexpected exceptions
-                return false; // Website is down
-            }
+        if (!$response) {
+            $this->sendNotification($website);
         }
+    }
 
-        protected function sendNotification($website)
-        {
-            // Fetch the client monitoring record
-            $clientMonitoring = $website->client; // Ensure this relationship is set up properly
-
-            if (!$clientMonitoring) {
-                $this->error("No client monitoring record associated with website: {$website->name}");
-                return;
-            }
-
-            if (!$clientMonitoring->bot_token) {
-                $this->error("No bot token found for client: {$clientMonitoring->name}");
-                return;
-            }
-
-            if (!$this->shouldNotify($website)) {
-                return; // Exit if the notification interval hasn't been met
-            }
-
-            // Fetch the last 5 downtimes from the MonitoringLog
-            $downtimeLogs = MonitoringLog::where('website_id', $website->id)
-                ->where('status_code', '>=', 400) // Include all error status codes >= 400
-                ->orderBy('time', 'desc')
-                ->take(5)
-                ->get();
-
-            // Group downtimes by date
-            $groupedDowntimeLogs = $downtimeLogs->groupBy(function ($log) {
-                return Carbon::parse($log->time)->format('d-m-Y'); // Group by date
-            });
-
-            // Define HTTP status descriptions
-            $statusDescriptions = [
-                400 => 'Bad Request',
-                401 => 'Unauthorized',
-                403 => 'Forbidden',
-                404 => 'Not Found',
-                408 => 'Request Timeout',
-                500 => 'Internal Server Error',
-                502 => 'Bad Gateway',
-                503 => 'Service Unavailable',
-                504 => 'Gateway Timeout',
-            ];
-
-            $downtimeMessage = '';
-            foreach ($groupedDowntimeLogs as $date => $logs) {
-                $downtimeMessage .= "Tanggal: {$date}\n";
-                foreach ($logs as $log) {
-                    $time = Carbon::parse($log->time)->format('H:i:s'); // Format waktu sebenarnya
-                    $description = $statusDescriptions[$log->status_code] ?? 'Unknown Error'; // Default to 'Unknown Error' if status code is not in the list
-                    $downtimeMessage .= "  - Code: {$log->status_code} ({$description}) | {$time} | {$log->response_time} ms\n";
-                }
-            }
-
-            if (empty($downtimeMessage)) {
-                $downtimeMessage = "No recent downtimes found.";
-            }
-
-            // Construct the full message
-            $message = "Website {$website->name} (URL: {$website->url}) is down.\n\n5 Downtime terakhir:\n{$downtimeMessage}";
-
-            // Send the notification via Telegram
-            $client = new HttpClient();
-            $url = "https://api.telegram.org/bot{$clientMonitoring->bot_token}/sendMessage";
-
-            try {
-                $client->post($url, [
-                    'form_params' => [
-                        'chat_id' => $clientMonitoring->chat_id,
-                        'text' => $message,
-                    ],
-                ]);
-
-                // Update last notified time
-                $website->last_notify_user_at = now();
-                $website->save();
-
-                $this->info("Notification sent for website: {$website->name}");
-            } catch (\Exception $e) {
-                $this->error("Failed to send notification: {$e->getMessage()}");
-            }
-        }
-
-
-
-        protected function shouldNotify($website)
-        {
-            // Check if the last notification was sent recently
-            if (!$website->last_notify_user_at || $website->last_notify_user_at->diffInMinutes() >= $website->notify_user_interval) {
-                return true;
-            }
+    protected function checkWebsite($httpClient, $url, &$statusCode)
+    {
+        try {
+            $response = $httpClient->get($url);
+            $statusCode = $response->getStatusCode();
+            return $statusCode === 200;
+        } catch (RequestException $e) {
+            $statusCode = $e->hasResponse() ? $e->getResponse()->getStatusCode() : 500;
+            return false;
+        } catch (ConnectException $e) {
+            $statusCode = 408;
+            return false;
+        } catch (\Exception $e) {
+            $statusCode = 500;
             return false;
         }
     }
+
+    protected function sendNotification($website)
+    {
+        $clientMonitoring = $website->client;
+
+        if (!$clientMonitoring || !$clientMonitoring->bot_token) {
+            $this->error("No client monitoring record or bot token found for website: {$website->name}");
+            return;
+        }
+
+        if (!$this->shouldNotify($website)) {
+            return;
+        }
+
+        $downtimeLogs = MonitoringLog::where('website_id', $website->id)
+            ->where('status_code', '>=', 400)
+            ->orderBy('time', 'desc')
+            ->take(5)
+            ->get();
+
+        $downtimeMessage = $this->formatDowntimeMessage($downtimeLogs);
+
+        $message = "Website {$website->name} (URL: {$website->url}) is down.\n\n5 Downtime terakhir:\n{$downtimeMessage}";
+
+        $this->sendTelegramMessage($clientMonitoring->bot_token, $clientMonitoring->chat_id, $message);
+
+        $website->last_notify_user_at = now();
+        $website->save();
+
+        $this->info("Notification sent for website: {$website->name}");
+    }
+
+    protected function formatDowntimeMessage($downtimeLogs)
+    {
+        $statusDescriptions = [
+            400 => 'Bad Request',
+            401 => 'Unauthorized',
+            403 => 'Forbidden',
+            404 => 'Not Found',
+            408 => 'Request Timeout',
+            500 => 'Internal Server Error',
+            502 => 'Bad Gateway',
+            503 => 'Service Unavailable',
+            504 => 'Gateway Timeout',
+        ];
+
+        $groupedDowntimeLogs = $downtimeLogs->groupBy(function ($log) {
+            return Carbon::parse($log->time)->format('d-m-Y');
+        });
+
+        $downtimeMessage = '';
+        foreach ($groupedDowntimeLogs as $date => $logs) {
+            $downtimeMessage .= "Tanggal: {$date}\n";
+            foreach ($logs as $log) {
+                $time = Carbon::parse($log->time)->format('H:i:s');
+                $description = $statusDescriptions[$log->status_code] ?? 'Unknown Error';
+                $downtimeMessage .= "  - Code: {$log->status_code} ({$description}) | {$time} | {$log->response_time} ms\n";
+            }
+        }
+
+        return $downtimeMessage ?: "No recent downtimes found.";
+    }
+
+    protected function sendTelegramMessage($botToken, $chatId, $message)
+    {
+        $client = new HttpClient();
+        $url = "https://api.telegram.org/bot{$botToken}/sendMessage";
+
+        try {
+            $client->post($url, [
+                'form_params' => [
+                    'chat_id' => $chatId,
+                    'text' => $message,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            $this->error("Failed to send notification: {$e->getMessage()}");
+        }
+    }
+
+    protected function shouldNotify($website)
+    {
+        return !$website->last_notify_user_at || $website->last_notify_user_at->diffInMinutes() >= $website->notify_user_interval;
+    }
+}
