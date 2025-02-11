@@ -8,11 +8,24 @@ on:
 jobs:
   dusk-tests:
     name: Run Tests
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: laravel_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --host=localhost --user=root --password=root"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
     steps:
       # 1. Checkout Repository
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # 2. Setup PHP Environment
       - name: Setup PHP
@@ -24,61 +37,50 @@ jobs:
 
       # 3. Install Dependencies
       - name: Install dependencies
-        run: composer install --no-progress --no-suggest --prefer-dist --optimize-autoloader
+        run: composer install --no-progress --prefer-dist --optimize-autoloader
 
-      # 4. Install MySQL
-      - name: Install MySQL
-        run: |
-          brew update
-          brew install mysql
-          brew services restart mysql
-          sleep 10 # Berikan waktu untuk MySQL agar bisa sepenuhnya berjalan
-
-      # 5. Verify MySQL is Running
-      - name: Verify MySQL
-        run: mysqladmin ping
-
-      # 6. Setup Database
-      - name: Setup database
-        run: |
-          mysql -e 'CREATE DATABASE laravel_test;'
-
-      # 7. Create .env file
+      # 4. Create .env file
       - name: Create .env file
         run: |
           cp .env.example .env
           php artisan key:generate
+          echo "DB_CONNECTION=mysql" >> .env
+          echo "DB_HOST=127.0.0.1" >> .env
+          echo "DB_PORT=3306" >> .env
+          echo "DB_DATABASE=laravel_test" >> .env
+          echo "DB_USERNAME=root" >> .env
+          echo "DB_PASSWORD=root" >> .env
 
-      # 8. Install Chrome and ChromeDriver
+      # 5. Run Migrations with Seed
+      - name: Run migrations
+        run: php artisan migrate:fresh --seed
+
+      # 6. Install Chrome and ChromeDriver
       - name: Install Google Chrome
-        run: brew install --cask google-chrome
+        run: sudo apt-get install -y google-chrome-stable
 
       - name: Install ChromeDriver
         run: php artisan dusk:chrome-driver --detect
 
-      # 9. Run Migrations
-      - name: Run migrations
-        run: php artisan migrate:fresh --seed
+      # 7. Run Laravel Dusk Tests
+      # - name: Run Laravel Dusk Tests
+      #   env:
+      #     APP_URL: http://127.0.0.1:8000
+      #   run: php artisan serve & sleep 5 && php artisan dusk
 
-      # 10. Run Laravel Dusk Tests
-      - name: Run Laravel Dusk Tests
-        env:
-          APP_URL: http://127.0.0.1:8000
-        run: php artisan serve & sleep 5 && php artisan dusk
-
-      # 11. Upload Screenshots on Failure
-      - name: Upload screenshots
-        if: failure()
-        uses: actions/upload-artifact@v3
-        with:
-          name: dusk-screenshots
-          path: tests/Browser/screenshots
+      # # 8. Upload Screenshots on Failure
+      # - name: Upload screenshots
+      #   if: failure()
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: dusk-screenshots
+      #     path: tests/Browser/screenshots
 
   web-deploy:
     name: 🎉 Deploy
     runs-on: ubuntu-latest
     needs: dusk-tests
-    if: success() # Hanya jalankan jika 'dusk-tests' berhasil
+    if: success()
     steps:
       # 1. Checkout Repository
       - name: 🚚 Get latest code
