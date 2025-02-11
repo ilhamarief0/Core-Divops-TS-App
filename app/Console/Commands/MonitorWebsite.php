@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use App\Models\ClientMonitoring;
 use Illuminate\Console\Command;
-use App\Models\ClientWebsiteMonitoring;
 use App\Models\MonitoringLog;
 use GuzzleHttp\Client as HttpClient;
 use GuzzleHttp\Exception\RequestException;

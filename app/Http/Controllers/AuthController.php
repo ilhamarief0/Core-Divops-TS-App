@@ -33,7 +33,7 @@ class AuthController extends Controller
             $request->session()->regenerate();
             return response()->json([
                 'success' => true,
-                'redirect_url' => url('/') // Change this to your desired redirect URL
+                'redirect_url' => url('/')
             ]);
         } else {
             return response()->json([
@@ -42,7 +42,6 @@ class AuthController extends Controller
             ]);
         }
 
-        // dd($request->all());
     }
 
     public function logout(Request $request)
@@ -52,7 +51,6 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        // Flash message to the session
         Session::flash('logout_message', 'Successfully logged out');
 
         return response()->json(['message' => 'Successfully logged out']);
