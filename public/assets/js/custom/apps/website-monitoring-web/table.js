@@ -1,153 +1,207 @@
-$(function () {
-    const dataTableUrl = '/monitoringweb/website/dataTable'; // Ganti dengan URL untuk endpoint DataTable
-    const bulkDeleteUrl = '/monitoringweb/website/bulk-delete'; // Ganti dengan URL untuk endpoint hapus massal
+"use strict";
 
-    // Inisialisasi DataTable
-    var table = $('.data-tablewebsitemonitoring').DataTable({
-        processing: true,
-        serverSide: true,
-        ajax: {
-            url: dataTableUrl,
-            data: function (d) {
-                d.search = $('#searchInput').val(); // Mengambil nilai input search
-            }
-        },
-        columns: [
-            {
-                data: 'id',
-                render: function (data) {
-                    return `
-                        <div class="form-check form-check-sm form-check-custom form-check-solid">
-                            <input class="form-check-input checkbox-nim" type="checkbox" value="${data}">
-                        </div>`;
-                },
-                orderable: false,
-                searchable: false
+let KTWorkday = (function () {
+    let datatable, table;
+
+    let initWorkdays = () => {
+        datatable = $(table).DataTable({
+            searchDelay: 500,
+            processing: true,
+            serverSide: true,
+            order: [[0, "asc"]],
+            ajax: {
+                url: $("#table-url").val(),
             },
-            { data: 'name' },
-            { data: 'url' },
-            { data: 'is_active' },
-            { data: 'client' },
-            { data: 'type' },
-            { data: 'notify_user_interval' },
-            {
-                data: 'id',
-                render: function (data, type, row) {
-                    let actionButtons = '<div class="flex text-end">';
-
-                    // Gunakan tablePermissions untuk menentukan apakah tombol edit harus ditampilkan
-                    actionButtons += `
-                        <a
-                         href="javascript:void(0)" data-id="${data}" data-bs-toggle="modal" data-bs-target="#kt_modal_edit_website">
-                            <button class="btn btn-icon btn-active-light-primary w-30px h-30px me-3">
-                                <i class="ki-duotone ki-setting-3 fs-3">
-                                    <span class="path1"></span>
-                                    <span class="path2"></span>
-                                    <span class="path3"></span>
-                                    <span class="path4"></span>
-                                    <span class="path5"></span>
-                                </i>
-                            </button>
-                        </a>`;
-
-                    actionButtons += '</div>';
-                    return actionButtons;
+            info: false,
+            columns: [
+                { data: "name" },
+                { data: "url" },
+                { data: "is_active" },
+                { data: "client" },
+                { data: "type" },
+                { data: "action", orderable: false, searchable: false },
+            ],
+            columnDefs: [
+                {
+                    targets: -1,
+                    className: "text-end",
+                    render: function (data, type, row) {
+                        return `
+                        <button class="edit-workday btn btn-icon btn-bg-light btn-active-color-success btn-sm me-1" data-bs-toggle="modal" data-bs-target="#kt_modal_edit_workday" data-id="${data}">
+                            <i class="ki-duotone ki-pencil fs-2">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                        </button>
+                        <button class="btn btn-icon btn-bg-light btn-active-color-danger btn-sm" data-kt-workdays-table-filter="delete_row" data-id="${data}">
+                            <i class="ki-duotone ki-trash fs-2">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                                <span class="path3"></span>
+                                <span class="path4"></span>
+                                <span class="path5"></span>
+                            </i>
+                        </button>`;
+                    },
                 },
-                orderable: false,
-                searchable: false
-            }
-        ]
-    });
+            ],
+        });
 
-    // Fungsi debounce untuk optimasi pencarian
-    function debounce(callback, delay) {
-        let timeout;
-        return function () {
-            clearTimeout(timeout);
-            timeout = setTimeout(callback, delay);
-        };
-    }
+        window.datatable = datatable;
 
-    // Event pencarian dengan debounce
-    $('#searchInput').on('keyup', debounce(function () {
-        table.ajax.reload(); // Reload DataTable saat mengetik
-    }, 300));
+        datatable.on("draw", function () {
+            handleDeleteRows();
+            KTMenu.createInstances();
+        });
+    };
 
-    // Select All Checkbox
-    $('#select-all').on('change', function () {
-        $('.checkbox-nim').prop('checked', this.checked);
-        toggleDeleteButton();
-    });
+    let initFlatpickerLocale = () => {
+        flatpickr.localize(flatpickr.l10ns.id);
+    };
 
-    // Perubahan pada checkbox
-    $(document).on('change', '.checkbox-nim', function () {
-        var allChecked = $('.checkbox-nim').length === $('.checkbox-nim:checked').length;
-        $('#select-all').prop('checked', allChecked);
-        toggleDeleteButton();
-    });
+    let handleSearchDatatable = () => {
+        const filterSearch = document.querySelector(
+            '[data-kt-workdays-table-filter="search"]'
+        );
 
-    // Tampilkan atau sembunyikan tombol hapus
-    function toggleDeleteButton() {
-        var selected = $('.checkbox-nim:checked').length > 0;
-        $('#delete-action').toggleClass('d-none', !selected);
-    }
+        let searchTimeout;
+        filterSearch.addEventListener("input", function (e) {
+            clearTimeout(searchTimeout);
 
-    // Event hapus data
-    $('#delete-selected').on('click', function () {
-        var ids = $('.checkbox-nim:checked').map(function () {
-            return this.value;
-        }).get();
+            searchTimeout = setTimeout(() => {
+                datatable.search(e.target.value).draw();
+            }, 700);
+        });
+    };
 
-        if (ids.length > 0) {
-            Swal.fire({
-                text: `Are you sure you want to delete these records?`,
-                icon: "warning",
-                showCancelButton: true,
-                buttonsStyling: false,
-                confirmButtonText: "Yes, delete it!",
-                cancelButtonText: "No, cancel",
-                customClass: {
-                    confirmButton: "btn btn-primary",
-                    cancelButton: "btn btn-active-light",
-                },
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        url: bulkDeleteUrl,
-                        method: 'POST',
-                        data: {
-                            ids: ids,
-                            _token: $('meta[name="csrf-token"]').attr('content') // Ambil CSRF token dari meta tag
-                        },
-                        success: function (response) {
-                            Swal.fire({
-                                text: response.message,
-                                icon: "success",
-                                buttonsStyling: false,
-                                confirmButtonText: "Ok, got it!",
-                                customClass: {
-                                    confirmButton: "btn btn-primary",
-                                },
-                            }).then(() => {
-                                table.ajax.reload();
-                            });
-                        },
-                        error: function (xhr) {
-                            const errorMsg = xhr.responseJSON?.error ||
-                                "An error occurred while deleting. Please try again.";
-                            Swal.fire({
-                                text: errorMsg,
-                                icon: "error",
-                                buttonsStyling: false,
-                                confirmButtonText: "Ok, got it!",
-                                customClass: {
-                                    confirmButton: "btn btn-primary",
-                                },
-                            });
-                        },
-                    });
-                }
+    let handleDeleteRows = () => {
+        // Select all delete buttons
+        const deleteButtons = table.querySelectorAll(
+            '[data-kt-workdays-table-filter="delete_row"]'
+        );
+
+        deleteButtons.forEach((d) => {
+            // Delete button on click
+            d.addEventListener("click", function (e) {
+                e.preventDefault();
+
+                // Select parent row
+                const parent = e.target.closest("tr");
+                const className = parent.querySelectorAll("td")[0].innerText;
+
+                const classId = $(this).data("id");
+                Swal.fire({
+                    text: "Are you sure you want to delete " + className + "?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    buttonsStyling: false,
+                    confirmButtonText: "Yes, delete!",
+                    cancelButtonText: "No, cancel",
+                    customClass: {
+                        confirmButton: "btn fw-bold btn-danger",
+                        cancelButton: "btn fw-bold btn-active-light-primary",
+                    },
+                }).then(function (result) {
+                    if (result.value) {
+                        Swal.fire({
+                            text: "Deleting " + className,
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            allowEnterKey: false,
+                            showConfirmButton: false,
+                            buttonsStyling: false,
+                            timerProgressBar: true,
+                            didOpen: () => {
+                                Swal.showLoading();
+
+                                const errorSwal = {
+                                    showConfirmButton: true,
+                                    timer: undefined,
+                                    timerProgressBar: false,
+                                    confirmButtonText: "Close",
+                                    customClass: {
+                                        confirmButton:
+                                            "btn fw-bold btn-primary",
+                                    },
+                                };
+
+                                $.ajax({
+                                    url: `/workdays/${classId}`,
+                                    type: "DELETE",
+                                    cache: false,
+                                    data: {
+                                        _token: token,
+                                    },
+                                })
+                                    .done((response) => {
+                                        Swal.fire(
+                                            Object.assign(
+                                                {
+                                                    text: response.message,
+                                                    icon: response.status,
+                                                    buttonsStyling: false,
+                                                    showConfirmButton: false,
+                                                    timer: 1000,
+                                                    timerProgressBar: true,
+                                                },
+                                                response.status == "error"
+                                                    ? errorSwal
+                                                    : {}
+                                            )
+                                        ).then(() => {
+                                            datatable.draw();
+                                        });
+                                    })
+                                    .fail((jqXHR, textStatus, error) => {
+                                        Swal.fire(
+                                            Object.assign(
+                                                {
+                                                    text:
+                                                        "Failed delete " +
+                                                        className +
+                                                        "!. " +
+                                                        jqXHR.responseJSON
+                                                            .message,
+                                                    icon: "error",
+                                                },
+                                                errorSwal
+                                            )
+                                        );
+                                    });
+                            },
+                        });
+                    } else if (result.dismiss === "cancel") {
+                        Swal.fire({
+                            text: className + " was not deleted.",
+                            icon: "error",
+                            buttonsStyling: false,
+                            confirmButtonText: "Ok, got it!",
+                            customClass: {
+                                confirmButton: "btn fw-bold btn-primary",
+                            },
+                        });
+                    }
+                });
             });
-        }
-    });
+        });
+    };
+
+    return {
+        init: function () {
+            table = document.querySelector("#kt_workdays_table");
+
+            if (!table) {
+                return;
+            }
+
+            initWorkdays();
+            initFlatpickerLocale();
+            handleDeleteRows();
+            handleSearchDatatable();
+        },
+    };
+})();
+
+KTUtil.onDOMContentLoaded(function () {
+    KTWorkday.init();
 });

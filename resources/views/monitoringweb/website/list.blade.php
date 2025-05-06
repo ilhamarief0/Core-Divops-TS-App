@@ -1,66 +1,102 @@
 @extends('layout.app')
-@section('content')
-    <div class="d-flex flex-column flex-column-fluid">
-        <div id="kt_app_content" class="app-content flex-column-fluid">
-            <div id="kt_app_content_container" class="app-container container-xxxl">
-                <div class="card">
-                    <div class="card-header border-0 pt-6">
-                        <div class="card-title">
-                            <div class="d-flex align-items-center position-relative my-1 me-5">
-                                <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-5">
-                                    <span class="path1"></span>
-                                    <span class="path2"></span>
-                                </i>
-                                <input type="text" id="searchInput" class="form-control form-control-solid w-250px ps-13" placeholder="Cari Website" />
+{{-- @push('token')
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+@endpush --}}
 
-                            </div>
-                        </div>
-                        <div class="card-toolbar">
-                            <div class="d-flex justify-content-end" data-kt-user-table-toolbar="base">
-
-                                    <div class="d-none" id="delete-action">
-                                        <button type="button" class="btn btn-danger me-3" id="delete-selected">Delete
-                                            Selected</button>
-                                    </div>
-
-                                    <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                                        data-bs-target="#kt_modal_add_website">
-                                        <i class="ki-duotone ki-plus fs-2"></i> Tambah Data Website
-                                    </button>
-
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-body py-4">
-                        <table class="table align-middle table-row-dashed fs-6 gy-5 data-tablewebsitemonitoring">
-                            <thead>
-                                <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
-                                    <th class="min-w-150px">
-                                        <div class="form-check form-check-sm form-check-custom form-check-solid">
-                                            <input class="form-check-input" type="checkbox" id="select-all">
-                                            <label class="form-check-label" for="select-all">Select All</label>
-                                        </div>
-                                    </th>
-                                    <th class="min-w-150px">Website Name</th>
-                                    <th class="min-w-150px">URL</th>
-                                    <th class="min-w-150px">Active Status</th>
-                                    <th class="min-w-150px">Client</th>
-                                    <th class="min-w-150px">Type</th>
-                                    <th class="min-w-150px">Notif User</th>
-                                    <th class="text-epnd min-w-100px">Actions</th>
-                                </tr>
-                            </thead>
-                        </table>
-                    </div>
-                </div>
-                @include('components.website.add-client-monitoring')
-                @include('components.website.edit-client-monitoring')
-            </div>
-        </div>
-    </div>
-@endsection
-@push('scripts')
-    <script src="{{ asset('assets/js/custom/apps/website-monitoring-web/table.js') }}"></script>
-    <script src="{{ asset('assets/js/custom/apps/website-monitoring-web/add.js') }}"></script>
-    <script src="{{ asset('assets/js/custom/apps/website-monitoring-web/edit.js') }}"></script>
+@push('styles')
+    <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
 @endpush
+
+
+@section('content')
+    <x-molecules.card>
+        <x-slot:header class="pt-6 border-0">
+            <x-slot:title>
+                <div class="my-1 d-flex align-items-center position-relative me-5">
+                    <x-atoms.icon class="position-absolute ms-5" icon="magnifier" path="2" size="3" />
+                    <x-atoms.input data-kt-workdays-table-filter="search" class="w-250px ps-13"
+                        placeholder="Cari hari kerja" />
+                </div>
+            </x-slot:title>
+            <x-slot:toolbar>
+                <div class="d-flex justify-content-end">
+                    <x-atoms.button id="button_add_workday" class="me-4" color="primary" data-bs-toggle="modal"
+                        data-bs-target="#kt_modal_add_workday">
+                        <x-atoms.icon class="fs-3" icon="plus-square" path="3" />
+                        Tambah Data
+                    </x-atoms.button>
+                </div>
+            </x-slot:toolbar>
+        </x-slot:header>
+        <x-slot:body class="py-4">
+            <input type="hidden" id="table-url" value="{{ route('clientwebsitemonitoring.datatable') }}">
+            <x-molecules.table class="mb-0 fs-6 gy-5" id="kt_workdays_table">
+                <x-slot:head>
+                    <tr class="text-gray-400 text-start fw-bold fs-7 text-uppercase gs-0">
+                        <th class="min-w-125px">Nama</th>
+                        <th class="min-w-125px">URL Website</th>
+                        <th class="min-w-125px text-end">Status</th>
+                        <th class="min-w-125px text-end">Client</th>
+                        <th class="min-w-125px text-end">Type</th>
+                        <th class="text-end min-w-100px">Actions</th>
+                    </tr>
+                </x-slot:head>
+                <x-slot:body>
+                </x-slot:body>
+            </x-molecules.table>
+        </x-slot:body>
+    </x-molecules.card>
+
+    <!--begin::Modal Add Workday-->
+    <x-molecules.modal id="kt_modal_add_workday" class="mw-650px">
+        <x-slot:title>Tambah Hari Kerja</x-slot:title>
+        <x-slot:body>
+            <form id="kt_modal_add_workday_form" class="form" action="#">
+                <div class="fv-row mb-7">
+                    <x-atoms.label value="Tahun Bulan" class="mb-2 fs-6 fw-semibold" />
+                    <x-atoms.input id="add-month-year-picker" name="month_year" placeholder="Masukkan bulan tahun" />
+                </div>
+                <div class="fv-row mb-7">
+                    <x-atoms.label class="mb-2 fs-6 fw-semibold" value="Jumlah Hari Kerja" />
+                    <x-atoms.input type="number" name="amount" placeholder="Masukkan jumlah hari kerja" />
+                </div>
+                <div class="text-center pt-15">
+                    <x-atoms.button type="reset" class="me-3" color="light"
+                        data-kt-workdays-modal-action="close">Close</x-atoms.button>
+                    <x-atoms.button type="submit" id="submit_add_workday" color="primary"
+                        data-url="{{ route('clientwebsitemonitoring.store') }}" data-kt-workdays-modal-action="submit"></x-atoms.button>
+                </div>
+            </form>
+        </x-slot:body>
+    </x-molecules.modal>
+    <!--end::Modal Add Workday-->
+
+    <!--begin::Modal Edit Workday-->
+    <x-molecules.modal id="kt_modal_edit_workday" class="mw-650px">
+        <x-slot:title>Edit Hari Kerja</x-slot:title>
+        <x-slot:body>
+            <form id="kt_modal_edit_workday_form" class="form" method="POST" enctype="multipart/form-data">
+                <div class="fv-row mb-7">
+                    <x-atoms.label value="Tahun Bulan" class="mb-2 fs-6 fw-semibold" />
+                    <x-atoms.input id="edit-month-year-picker" name="month_year" placeholder="Masukkan bulan tahun" />
+                </div>
+                <div class="fv-row mb-7">
+                    <x-atoms.label class="mb-2 fs-6 fw-semibold" value="Jumlah Hari Kerja" />
+                    <x-atoms.input type="number" name="amount" min="1" max="31"
+                        placeholder="Masukkan jumlah hari kerja" />
+                </div>
+                <div class="text-center pt-15">
+                    <x-atoms.button type="reset" class="me-3" color="light"
+                        data-kt-workdays-modal-action="close">Close</x-atoms.button>
+                    <x-atoms.button type="submit" id="submit_edit_workday" color="primary" data-id=""
+                        data-kt-workdays-modal-action="submit"></x-atoms.button>
+                </div>
+            </form>
+        </x-slot:body>
+    </x-molecules.modal>
+    <!--end::Modal Edit Workday-->
+
+    @push('scripts')
+        <script src="{{ asset('assets/js/custom/apps/website-monitoring-web/table.js') }}"></script>
+    @endpush
+@endsection

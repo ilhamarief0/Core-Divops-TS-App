@@ -9,84 +9,118 @@ use Illuminate\Support\Facades\Cache; // For caching the JWT token
 
 class WeeklyRecapsForumController extends Controller
 {
-    // This method assumes you have a login route or a mechanism to get the JWT token
     private function getJwtToken()
     {
-        if (Cache::has('jwt_token')) {
-            return Cache::get('jwt_token');
-        }
+        try {
+             $authResponse = Http::post('http://localhost:3000/api/login', [
+                 'username' => 'adminforumaccess',
+                 'password' => 'pass1234',
+             ]);
 
-        // Example: Make a POST request to login and get the JWT token
-        $response = Http::post('https://apiforum.divops.devtechnos.com/api/login', [
-            'username' => 'testuser',  // Replace with your actual username
-            'password' => 'testpassword',  // Replace with your actual password
-        ]);
+             if ($authResponse->successful() && isset($authResponse->json()['token'])) {
+                 return $authResponse->json()['token'];
+             }
 
-        // If login is successful, store the token in cache
-        if ($response->successful()) {
-            $token = $response->json()['token'];
-
-            // Cache the token for 55 minutes (since JWT tokens usually last for an hour)
-            Cache::put('jwt_token', $token, now()->addMinutes(55));
-
-            return $token;
-        }
-
-        // If login failed, return null
-        return null;
+             return null;
+         } catch (\Exception $e) {
+             return null;
+         }
     }
 
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            // Get the JWT token
             $jwtToken = $this->getJwtToken();
-
             if (!$jwtToken) {
-                return response()->json(['error' => 'Unable to authenticate'], 401);
+                return response()->json(['error' => 'Unable to authenticate with forum API'], 401);
             }
 
-            // Fetch data from the Python API with the JWT token in the Authorization header
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $jwtToken,
-            ])->get('https://apiforum.divops.devtechnos.com/api/recap'); // Replace with your Python API URL
+            ])->get('http://localhost:3000/api/forum/weeklyrecap');
 
-            // Check if the API call was successful
             if ($response->successful()) {
-                $data = $response->json(); // Decode JSON response into array
+                $apiResponse = $response->json();
 
-                // Optionally apply filtering for minggu, bulan, and tahun
-                if ($request->has('minggu') && $request->minggu) {
-                    $data = array_filter($data, function ($item) use ($request) {
-                        return $item['minggu'] == $request->minggu;
-                    });
+                if (!isset($apiResponse['data']) || !is_array($apiResponse['data'])) {
+                     return response()->json(['error' => 'Invalid data format received from forum API'], 500);
                 }
-                if ($request->has('bulan') && $request->bulan) {
-                    $data = array_filter($data, function ($item) use ($request) {
-                        return $item['bulan'] == $request->bulan;
-                    });
+
+                $nestedData = $apiResponse['data'];
+                $flattenedData = [];
+
+                foreach ($nestedData as $weekData) {
+                    if (isset($weekData['tahun'], $weekData['bulan'], $weekData['minggu'], $weekData['tags']) && is_array($weekData['tags'])) {
+                        $tahun = $weekData['tahun'];
+                        $bulan = $weekData['bulan'];
+                        $minggu = $weekData['minggu'];
+
+                        foreach ($weekData['tags'] as $tagData) {
+                            if (isset($tagData['divisi'], $tagData['total_postingan'])) {
+                                $flattenedData[] = [
+                                    'tahun' => $tahun,
+                                    'bulan' => $bulan,
+                                    'minggu' => $minggu,
+                                    'divisi' => $tagData['divisi'],
+                                    'total_postingan' => $tagData['total_postingan'],
+                                ];
+                            }
+                        }
+                    }
                 }
+
+                $filteredData = $flattenedData;
+
                 if ($request->has('tahun') && $request->tahun) {
-                    $data = array_filter($data, function ($item) use ($request) {
-                        return $item['tahun'] == $request->tahun;
+                    $filteredData = array_filter($filteredData, function ($item) use ($request) {
+                        return isset($item['tahun']) && $item['tahun'] == $request->tahun;
                     });
                 }
 
-                // Return data to DataTable
-                return DataTables::of($data)
+                 if ($request->has('bulan') && $request->bulan) {
+                    $filteredData = array_filter($filteredData, function ($item) use ($request) {
+                         return isset($item['bulan']) && $item['bulan'] == $request->bulan;
+                    });
+                }
+
+                if ($request->has('minggu') && $request->minggu) {
+                    $filteredData = array_filter($filteredData, function ($item) use ($request) {
+                        return isset($item['minggu']) && $item['minggu'] == $request->minggu;
+                    });
+                }
+
+                $filteredData = array_values($filteredData);
+
+                return DataTables::of($filteredData)
                     ->addIndexColumn()
+                     ->addColumn('tahun', function($row) {
+                         return $row['tahun'] ?? '';
+                     })
+                     ->addColumn('bulan', function($row) {
+                         return $row['bulan'] ?? '';
+                     })
+                     ->addColumn('minggu', function($row) {
+                         return $row['minggu'] ?? '';
+                     })
+                     ->addColumn('divisi', function($row) {
+                         return $row['divisi'] ?? '';
+                     })
                     ->addColumn('total_postingan', function ($row) {
+                         $totalPostingan = $row['total_postingan'] ?? 0;
                         return '
                             <div class="flex text-end">
-                                <span class="badge py-3 px-4 fs-7 badge-light-primary">' . $row['total_postingan'] . '</span>
+                                <span class="badge py-3 px-4 fs-7 badge-light-primary">' . $totalPostingan . '</span>
                             </div>';
                     })
                     ->rawColumns(['total_postingan'])
                     ->make(true);
             }
 
-            // If the API call fails, return an error response
-            return response()->json(['error' => 'Error fetching data from Python API'], 500);
+            $statusCode = $response->status();
+            $errorMessage = $response->body();
+
+            return response()->json(['error' => "Error fetching data from forum API: Status {$statusCode}", 'details' => $errorMessage], $statusCode);
+
         }
 
         return view('forumrecaps.weekly.index');

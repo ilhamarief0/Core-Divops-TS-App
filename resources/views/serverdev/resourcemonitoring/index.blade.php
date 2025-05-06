@@ -117,112 +117,127 @@
                 renderer: yRenderer
             }));
 
-            var series1, series2;
+            var series1 = null;
+            var series2 = null;
+            var refreshIntervalId = null;
 
             function updateChartData(data) {
-                // Buat data untuk chart berdasarkan respons
+                if (!data || typeof data.cpu_usage_percent === 'undefined' || !data.memory || typeof data.memory.usage_percent === 'undefined' || !data.disk || typeof data.disk.usage_percent === 'undefined') {
+                     console.error("Invalid data structure received:", data);
+
+                     return;
+                }
+
                 const chartData = [{
                         category: "CPU Usage",
-                        full: data.cpu_usage_percent,
+                        full: 100, // Nilai 'full' untuk latar belakang (selalu 100%)
                         value: data.cpu_usage_percent,
                         columnSettings: {
-                            fill: "#67b7dc" // Warna untuk CPU Usage
+                            fill: am5.color(0x67b7dc)
                         }
                     },
                     {
                         category: "Memory Usage",
-                        full: data.memory.usage_percent,
+                        full: 100,
                         value: data.memory.usage_percent,
                         columnSettings: {
-                            fill: "#6794dc" // Warna untuk Memory Usage
+                            fill: am5.color(0x6794dc)
                         }
                     },
                     {
                         category: "Disk Usage",
-                        full: data.disk.usage_percent,
+                        full: 100,
                         value: data.disk.usage_percent,
                         columnSettings: {
-                            fill: "#dc67ab" // Warna untuk Disk Usage
+                            fill: am5.color(0xdc67ab)
                         }
                     }
                 ];
 
-
-                console.log('Chart Data:', chartData); // Tambahkan log ini untuk memeriksa data chart
+                console.log('Updating Chart Data:', chartData);
 
                 yAxis.data.setAll(chartData);
 
-                // Hapus seri lama jika ada
-                if (series1) {
-                    chart.series.removeValue(series1);
+                if (!series1 || !series2) {
+                    console.log('Creating series for the first time');
+
+                    series1 = chart.series.push(am5radar.RadarColumnSeries.new(root, {
+                        xAxis: xAxis,
+                        yAxis: yAxis,
+                        clustered: false,
+                        valueXField: "full",
+                        categoryYField: "category",
+                        fill: root.interfaceColors.get("alternativeBackground")
+                    }));
+
+                    series1.columns.template.setAll({
+                        width: am5.p100,
+                        fillOpacity: 0.08,
+                        strokeOpacity: 0,
+                        cornerRadius: 20
+                    });
+                    series1.data.setAll(chartData);
+
+                    series2 = chart.series.push(am5radar.RadarColumnSeries.new(root, {
+                        xAxis: xAxis,
+                        yAxis: yAxis,
+                        clustered: false,
+                        valueXField: "value",
+                        categoryYField: "category"
+                    }));
+
+                    series2.columns.template.setAll({
+                        width: am5.p100,
+                        strokeOpacity: 0,
+                        tooltipText: "{category}: {valueX}%",
+                        cornerRadius: 20,
+                        templateField: "columnSettings"
+                    });
+                    series2.data.setAll(chartData);
+
+                    series1.appear(1000);
+                    series2.appear(1000);
+                    chart.appear(1000, 100);
+
+                } else {
+                    console.log('Updating existing series data');
+                    series1.data.setAll(chartData);
+                    series2.data.setAll(chartData);
                 }
-                if (series2) {
-                    chart.series.removeValue(series2);
-                }
-
-                // Tambahkan seri baru
-                series1 = chart.series.push(am5radar.RadarColumnSeries.new(root, {
-                    xAxis: xAxis,
-                    yAxis: yAxis,
-                    clustered: false,
-                    valueXField: "full",
-                    categoryYField: "category",
-                    fill: root.interfaceColors.get("alternativeBackground")
-                }));
-
-                series1.columns.template.setAll({
-                    width: am5.p100,
-                    fillOpacity: 0.08,
-                    strokeOpacity: 0,
-                    cornerRadius: 20
-                });
-
-                series1.data.setAll(chartData);
-
-                series2 = chart.series.push(am5radar.RadarColumnSeries.new(root, {
-                    xAxis: xAxis,
-                    yAxis: yAxis,
-                    clustered: false,
-                    valueXField: "value",
-                    categoryYField: "category"
-                }));
-
-                series2.columns.template.setAll({
-                    width: am5.p100,
-                    strokeOpacity: 0,
-                    tooltipText: "{category}: {valueX}%",
-                    cornerRadius: 20,
-                    templateField: "columnSettings"
-                });
-
-                series2.data.setAll(chartData);
-
-                series1.appear(1000);
-                series2.appear(1000);
-                chart.appear(1000, 100);
             }
 
-
-
             function fetchData() {
+                console.log('Fetching data...');
                 $.ajax({
-                    url: 'https://api.divops.devtechnos.com/api/resource',
+                    url: 'http://localhost:3242/api/resource',
                     method: 'GET',
                     success: function(response) {
-                        console.log('API Response:', response); // Tambahkan log ini
-                        updateChartData(
-                            response); // Pastikan Anda memanggil updateChartData dengan benar
+                        console.log('API Response:', response);
+                        updateChartData(response);
                     },
                     error: function(xhr, status, error) {
                         console.error('Error fetching data:', error);
                     }
                 });
             }
+
             fetchData();
 
+
+            refreshIntervalId = setInterval(fetchData, 5000);
+
             $('#refreshChart').on('click', function() {
+                console.log('Manual refresh triggered');
                 fetchData();
             });
+
+            root.events.on("dispose", function() {
+                 if (refreshIntervalId) {
+                     clearInterval(refreshIntervalId);
+                     console.log("Chart disposed, interval cleared.");
+                 }
+            });
+
         });
     </script>
 @endpush

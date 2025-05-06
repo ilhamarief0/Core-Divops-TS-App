@@ -6,18 +6,10 @@
     <div class="app-sidebar-logo px-6" id="kt_app_sidebar_logo">
         <!--begin::Logo image-->
         <a href="#" style="font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 25px; color: white;text-decoration: none;">
-            Div. Operation TS
+            CORE DIVOPS
         </a>
         <!--end::Logo image-->
         <!--begin::Sidebar toggle-->
-        <!--begin::Minimized sidebar setup:
-            if (isset($_COOKIE["sidebar_minimize_state"]) && $_COOKIE["sidebar_minimize_state"] === "on") {
-                1. "src/js/layout/sidebar.js" adds "sidebar_minimize_state" cookie value to save the sidebar minimize state.
-                2. Set data-kt-app-sidebar-minimize="on" attribute for body tag.
-                3. Set data-kt-toggle-state="active" attribute to the toggle element with "kt_app_sidebar_toggle" id.
-                4. Add "active" class to to sidebar toggle element with "kt_app_sidebar_toggle" id.
-            }
-        -->
         <div id="kt_app_sidebar_toggle"
             class="app-sidebar-toggle btn btn-icon btn-shadow btn-sm btn-color-muted btn-active-color-primary h-30px w-30px position-absolute top-50 start-100 translate-middle rotate"
             data-kt-toggle="true" data-kt-toggle-state="active" data-kt-toggle-target="body"
@@ -73,6 +65,24 @@
                     <!--begin:Menu item-->
                     <div class="menu-item">
                         <!--begin:Menu link-->
+                        <a class="menu-link {{ Route::is('overviewmonitoring.index') ? 'active' : '' }}"
+                            href="{{ route('overviewmonitoring.index') }}">
+                            <span class="menu-icon">
+                                <i class="ki-duotone ki-element-11 fs-2">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                    <span class="path3"></span>
+                                    <span class="path4"></span>
+                                </i>
+                            </span>
+                            <span class="menu-title">Overview Monitoring</span>
+                        </a>
+                        <!--end:Menu link-->
+                    </div>
+                    <!--end:Menu item-->
+                    <!--begin:Menu item-->
+                    <div class="menu-item">
+                        <!--begin:Menu link-->
                         <a class="menu-link {{ Route::is('clientmonitoringweb.index') ? 'active' : '' }}"
                             href="{{ route('clientmonitoringweb.index') }}">
                             <span class="menu-icon">
@@ -83,7 +93,7 @@
                                     <span class="path4"></span>
                                 </i>
                             </span>
-                            <span class="menu-title">Client Monitoring</span>
+                            <span class="menu-title">List Client</span>
                         </a>
                         <!--end:Menu link-->
                     </div>
@@ -101,7 +111,7 @@
                                     <span class="path4"></span>
                                 </i>
                             </span>
-                            <span class="menu-title">Website Monitoring</span>
+                            <span class="menu-title">List Website</span>
                         </a>
                         <!--end:Menu link-->
                     </div>
@@ -156,7 +166,7 @@
                     <div class="menu-item pt-5">
                         <!--begin:Menu content-->
                         <div class="menu-content">
-                            <span class="menu-heading fw-bold text-uppercase fs-7">Server Monitoring</span>
+                            <span class="menu-heading fw-bold text-uppercase fs-7">Monitoring Resource</span>
                         </div>
                         <!--end:Menu content-->
                     </div>
@@ -174,7 +184,7 @@
                                     <span class="path4"></span>
                                 </i>
                             </span>
-                            <span class="menu-title">Server Dev</span>
+                            <span class="menu-title">SERVER DEV</span>
                         </a>
                         <!--end:Menu link-->
                     </div>

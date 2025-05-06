@@ -81,9 +81,20 @@
                                         });
                                     }
                                 },
-                                error: function () {
+                                error: function (xhr) {
+                                    let errorMessage = "Terjadi kesalahan yang tidak diketahui.";
+                                    
+                                    // Coba ambil pesan dari response JSON
+                                    try {
+                                        const response = JSON.parse(xhr.responseText);
+                                        errorMessage = response.message || errorMessage;
+                                    } catch (e) {
+                                        // Jika parsing JSON gagal, ambil responseText biasa
+                                        errorMessage = xhr.responseText || errorMessage;
+                                    }
+                                
                                     Swal.fire({
-                                        text: "Terjadi Kesalahan Saat Mencoba Login, Silahkan Cek Email & Password Anda.",
+                                        text: errorMessage,
                                         icon: "error",
                                         buttonsStyling: false,
                                         confirmButtonText: "Ok, got it!",
@@ -92,6 +103,7 @@
                                         },
                                     });
                                 },
+                                
                                 complete: function () {
                                     submitButton.removeAttribute(
                                         "data-kt-indicator"
@@ -101,7 +113,7 @@
                             });
                         } else {
                             Swal.fire({
-                                text: "Terjadi Kesalahan Saat Mencoba Login, Silahkan Cek Email & Password Anda.",
+                                text: "Terjadi Kesalahan Saat Mencoba Login, Silahkan Cek Username & Password Anda.",
                                 icon: "error",
                                 buttonsStyling: false,
                                 confirmButtonText: "Ok, got it!",

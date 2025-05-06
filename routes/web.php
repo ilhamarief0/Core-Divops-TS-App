@@ -8,20 +8,17 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MonitoringServerController;
 use App\Http\Controllers\MonitoringWebController;
 use App\Http\Controllers\MonthlyRecapsForumController;
+use App\Http\Controllers\OverviewMonitoringController;
 use App\Http\Controllers\ServerDevResourceMonitoringController;
 use App\Http\Controllers\WeeklyRecapsForumController;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 
 
 Route::redirect('/', '/login');
 
 Route::controller(MonitoringServerController::class)->group(function(){
-
     Route::get('/statusserver', 'indexstatusserver')->name('dashboard.monitoringserver');
     Route::get('/check-servers', 'checkServers')->name('check-servers.monitoringserver');
-
 });
 
 Route::middleware('guest')->group(function () {
@@ -50,6 +47,10 @@ Route::middleware('auth')->group(function () {
         Route::delete('/monitoringweb/client/delete/{id}', 'delete')->name('clientmonitoringweb.delete');
         Route::get('/monitoringweb/client/getData/{id}', 'getData')->name('clientmonitoringweb.getdata');
         Route::post('/monitoringweb/client/update/{id}', 'update')->name('clientmonitoring.update');
+    });
+
+    Route::controller(OverviewMonitoringController::class)->group(function(){
+        Route::get('/overviewmonitoring', 'index')->name('overviewmonitoring.index');
     });
 
     Route::controller(ClientWebsiteMonitoringWebController::class)->group(function () {

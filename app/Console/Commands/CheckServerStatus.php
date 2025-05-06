@@ -49,10 +49,9 @@ class CheckServerStatus extends Command
             $server->status = 'Down';
         }
 
-        // Simpan perubahan ke database
         $server->save();
 
-        // Simpan log ke tabel log
+
         MonitoringServerLog::create([
             'server_id' => $server->id,
             'status' => $server->status,

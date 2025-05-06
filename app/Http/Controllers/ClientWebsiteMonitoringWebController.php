@@ -19,12 +19,6 @@ class ClientWebsiteMonitoringWebController extends Controller
         if ($request->ajax()) {
 
             $data = ClientWebsiteMonitoring::query();
-            $search = $request->input('search');
-
-            if ($search) {
-                $data->where('name', 'like', "%{$search}%")
-                    ->orWhere('url', 'like', "%{$search}%");
-            }
 
             return DataTables::of($data)
                 ->addIndexColumn()
@@ -68,6 +62,7 @@ class ClientWebsiteMonitoringWebController extends Controller
 
     public function bulkDelete(Request $request)
     {
+
         $ids = $request->ids;
 
         DB::beginTransaction();
@@ -83,7 +78,9 @@ class ClientWebsiteMonitoringWebController extends Controller
 
             return response()->json(['error' => 'An error occurred: ' . $e->getMessage()], 500);
         }
+    
     }
+
 
     public function store(Request $request)
     {
@@ -123,7 +120,6 @@ class ClientWebsiteMonitoringWebController extends Controller
 
     public function update(Request $request, ClientWebsiteMonitoring $id)
     {
-        // Validate incoming data
         $validatedData = $request->validate([
             'name' => 'required',
             'url' => 'required',
@@ -136,13 +132,11 @@ class ClientWebsiteMonitoringWebController extends Controller
 
         $validatedData['is_active'] = $request->has('is_active') ? 1 : 0;
 
-
-        // Update the customer site with validated data
         $id->update($validatedData);
 
         return response()->json([
             'message' => 'Client updated successfully',
-            'data' => $id // Opsional: kembalikan data yang telah diupdate
+            'data' => $id
         ], 200);
     }
 
@@ -170,13 +164,10 @@ class ClientWebsiteMonitoringWebController extends Controller
 
     public function show(Request $request, $encryptedCustomerSiteId)
     {
-        // Dekripsi ID yang dienkripsi
         $customerSiteId = Crypt::decryptString($encryptedCustomerSiteId);
 
-        // Ambil data website menggunakan ID yang sudah didekripsi
         $customerSite = ClientWebsiteMonitoring::findOrFail($customerSiteId);
 
-        // Lanjutkan proses logika lain yang sudah Anda buat
         $timeRange = request('time_range', '1h');
         $startTime = $this->getStartTimeByTimeRange($timeRange);
 

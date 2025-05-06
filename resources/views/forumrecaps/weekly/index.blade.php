@@ -48,7 +48,6 @@
                                         Agustus 2024</span>
                                 </h3>
                                 <!--end::Title-->
-
                                 <!--begin::Actions-->
                                 <div class="card-toolbar">
                                     <!--begin::Filters-->
@@ -153,7 +152,6 @@
                         var bulan = $('#filter-bulan').find(":selected").text();
                         var tahun = $('#filter-tahun').find(":selected").text();
 
-                        // Update title and subtitle
                         $('#card-title').text('Recap Mingguan');
                         $('#card-subtitle').text('Minggu ' + minggu + ' Bulan ' + bulan + ' ' + tahun);
 
@@ -172,32 +170,20 @@
             });
 
             $('#filter-tampilkan').click(function() {
-                table.draw(); // Refresh DataTable dengan filter baru
+                table.draw();
             });
         });
     </script>
     <script>
-        // Mendapatkan tanggal sekarang
         const today = new Date();
-
-        // Menghitung minggu sekarang
         const startOfYear = new Date(today.getFullYear(), 0, 1);
         const diffDays = Math.floor((today - startOfYear) / (24 * 60 * 60 * 1000));
         const currentWeek = Math.ceil((diffDays + startOfYear.getDay() + 1) / 7);
-
-        // Bulan sekarang (0 = Januari, jadi perlu +1)
         const currentMonth = today.getMonth() + 1;
-
-        // Tahun sekarang
         const currentYear = today.getFullYear();
 
-        // Set nilai default minggu
-        document.getElementById('filter-minggu').value = Math.min(currentWeek); // Set maksimal ke minggu ke-5 jika melebihi
-
-        // Set nilai default bulan
+        document.getElementById('filter-minggu').value = Math.min(currentWeek);
         document.getElementById('filter-bulan').value = currentMonth;
-
-        // Set nilai default tahun
         document.getElementById('filter-tahun').value = currentYear;
     </script>
 @endpush
