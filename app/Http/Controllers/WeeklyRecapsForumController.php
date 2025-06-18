@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;  // Import Http client
+use Illuminate\Support\Facades\Http;
 use Yajra\DataTables\Facades\DataTables;
-use Illuminate\Support\Facades\Cache; // For caching the JWT token
+use Illuminate\Support\Facades\Cache;
 
 class WeeklyRecapsForumController extends Controller
 {

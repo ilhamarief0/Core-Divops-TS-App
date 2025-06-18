@@ -16,6 +16,9 @@ class AuthController extends Controller
 
     public function ajaxLogin(Request $request)
     {
+
+      // dd($request->all());
+
         $validator = Validator::make($request->all(), [
             'username' => 'required',
             'password' => 'required|min:6',

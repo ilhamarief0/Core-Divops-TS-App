@@ -130,7 +130,7 @@
 
                 const chartData = [{
                         category: "CPU Usage",
-                        full: 100, // Nilai 'full' untuk latar belakang (selalu 100%)
+                        full: 100,
                         value: data.cpu_usage_percent,
                         columnSettings: {
                             fill: am5.color(0x67b7dc)

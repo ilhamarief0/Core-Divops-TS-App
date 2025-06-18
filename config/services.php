@@ -24,6 +24,14 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'forum_api' => [
+        'login_url' => env('FORUM_API_LOGIN_URL', 'http://localhost:3000/api/login'),
+        'weekly_recap_url' => env('FORUM_API_WEEKLY_RECAP_URL', 'http://localhost:3000/api/forum/weeklyrecap'),
+        'monthly_recap_url' => env('FORUM_API_MONTHLY_RECAP_URL', 'http://localhost:3000/api/forum/monthlyrecap'),
+        'username' => env('FORUM_API_USERNAME', 'adminforumaccess'), // Or testuser for monthly
+        'password' => env('FORUM_API_PASSWORD', 'pass1234'), // Or testpassword for monthly
+    ],
+
     'resend' => [
         'key' => env('RESEND_KEY'),
     ],
